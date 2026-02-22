@@ -1,0 +1,51 @@
+product_id,name,category,description,image_url
+1,iPhone 15 Pro,Electronics,Latest Apple smartphone with titanium body and pro camera system,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPAYIinm_yjdXKZhPlCbAypxab7cRL9JuzSA&s
+2,MacBook Air M2,Electronics,Thin and light laptop with M2 chip and liquid retina display,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHwKWRGak6aMPRnhKwb41HtXMqhIMb5YyLCw&s
+3,Sony WH-1000XM5,Electronics,Industry leading noise canceling wireless headphones,https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400
+4,Mechanical Keyboard,Electronics,RGB backlit gaming keyboard with blue switches,https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?q=80&w=400
+5,Samsung Galaxy S23,Electronics,Powerful Android smartphone with great display and zoom camera,https://images.unsplash.com/photo-1678911820864-e2c567c655d7?q=80&w=400
+6,Gaming Laptop RTX 4080,Electronics,High-end gaming laptop with powerful graphics card,https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=400
+7,Wireless Gaming Mouse,Electronics,Ergonomic wireless mouse with high DPI sensor and customizable buttons,https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=400
+8,Portable Bluetooth Speaker,Electronics,Waterproof portable speaker with deep bass and long battery life,https://images.unsplash.com/photo-1608156639585-b3a032ef9689?q=80&w=400
+9,Smart Watch Series 9,Electronics,Advanced fitness tracker and smartwatch with heart rate monitoring,https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400
+10,Noise Cancelling Earbuds,Electronics,Compact wireless earbuds with active noise cancellation,https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=400
+11,Nike Air Max,Fashion,Comfortable and stylish running shoes for athletes,https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400
+12,Levi's 501 Jeans,Fashion,Classic straight leg denim jeans for daily wear,https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=400
+13,Adidas Ultraboost,Fashion,Premium running shoes with responsive cushioning,https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?q=80&w=400
+14,Travel Backpack,Fashion,Durable water-resistant backpack with laptop compartment,https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400
+15,Running Shorts,Fashion,Lightweight moisture-wicking shorts designed for long distance running,https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=400
+16,Cotton Hoodie,Fashion,Soft premium cotton hoodie with fleece lining for cold weather,https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=400
+17,Leather Jacket,Fashion,Classic biker style real leather jacket with zippers,https://images.unsplash.com/photo-1551028919-30164a7ed401?q=80&w=400
+18,Aviator Sunglasses,Fashion,Classic metal frame aviator sunglasses with UV protection,https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=400
+19,Formal Oxford Shoes,Fashion,Elegant brown leather oxford shoes for formal occasions,https://images.unsplash.com/photo-1614252235316-06f87530b539?q=80&w=400
+20,Summer Floral Dress,Fashion,Lightweight floral print sundress perfect for warm weather,https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=400
+21,KitchenAid Stand Mixer,Home,Powerful kitchen mixer for baking and food prep,https://images.unsplash.com/photo-1594385208974-2e75f9d3bb4a?q=80&w=400
+22,Nespresso Machine,Home,Compact espresso machine for quick coffee brewing,https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?q=80&w=400
+23,Yoga Mat Pro,Home,Non-slip eco-friendly yoga mat with extra cushioning,https://images.unsplash.com/photo-1592432678899-35492985175a?q=80&w=400
+24,Burr Coffee Grinder,Home,Professional grade coffee grinder with adjustable settings,https://images.unsplash.com/photo-1580915411954-282cb1b0d780?q=80&w=400
+25,LED Desk Lamp,Home,Modern desk lamp with adjustable brightness and color temperature,https://images.unsplash.com/photo-1534073828943-f801091bb270?q=80&w=400
+26,Insulated Water Bottle,Home,Stainless steel vacuum insulated bottle keeps drinks cold 24h,https://images.unsplash.com/photo-1602143307185-84487493375e?q=80&w=400
+27,Air Purifier HEPA,Home,Advanced air filtration system that removes 99% of dust,https://images.unsplash.com/photo-1585771724684-25271286bb24?q=80&w=400
+28,Ergonomic Office Chair,Home,Adjustable office chair with lumbar support and breathable mesh,https://images.unsplash.com/photo-1505797149-43b0069ec26b?q=80&w=400
+29,Cast Iron Skillet,Home,Durable cast iron skillet for searing and baking,https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?q=80&w=400
+30,Robot Vacuum,Home,Smart robot vacuum cleaner with mapping and app control,https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=400
+31,Matte Lipstick,Beauty,Long-lasting matte lipstick in vibrant red shade,https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=400
+32,Liquid Foundation,Beauty,Full coverage liquid foundation for all skin types,https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?q=80&w=400
+33,Volumizing Mascara,Beauty,Black mascara for volume and length without clumping,https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?q=80&w=400
+34,Eau de Parfum,Beauty,Luxury floral scent perfume with notes of jasmine and rose,https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=400
+35,Hydrating Face Cream,Beauty,Daily moisturizer with hyaluronic acid for dry skin,https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=400
+36,Gel Nail Polish,Beauty,UV LED gel nail polish set in pastel colors,https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=400
+37,Makeup Brush Set,Beauty,Professional 10-piece synthetic makeup brush collection,https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=400
+38,Argan Oil Shampoo,Beauty,Sulfate-free shampoo enriched with argan oil for shine,https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?q=80&w=400
+39,Vitamin C Serum,Beauty,Brightening facial serum to reduce dark spots,https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?q=80&w=400
+40,Eyeshadow Palette,Beauty,Highly pigmented eyeshadow palette with matte and shimmer shades,https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=400
+41,Tennis Racket,Sports,Lightweight graphite tennis racket for intermediate players,https://images.unsplash.com/photo-1617083934555-563d6412e92b?q=80&w=400
+42,Basketball,Sports,Official size indoor outdoor basketball with superior grip,https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=400
+43,Dumbbell Set,Sports,Adjustable weight dumbbell set for home workouts,https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?q=80&w=400
+44,Soccer Ball,Sports,Professional training soccer ball size 5,https://images.unsplash.com/photo-1614632537423-1e6c2e7e0aab?q=80&w=400
+45,Cycling Helmet,Sports,Aerodynamic safety helmet with ventilation for road cycling,https://images.unsplash.com/photo-1558537348-c0f8e747b520?q=80&w=400
+46,Boxing Gloves,Sports,Leather boxing gloves with wrist support for sparring,https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=400
+47,Golf Club Set,Sports,Complete set of golf clubs with bag for beginners,https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=400
+48,Swimming Goggles,Sports,Anti-fog UV protection swimming goggles with adjustable strap,https://images.unsplash.com/photo-1600965962102-9d260a71890d?q=80&w=400
+49,Baseball Bat,Sports,Aluminum alloy baseball bat with cushioned grip,https://images.unsplash.com/photo-1593786481097-cf281dd12e9e?q=80&w=400
+50,Jump Rope,Sports,Speed jump rope with ball bearings for cardio training,https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=400
