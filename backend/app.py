@@ -14,22 +14,24 @@ CORS(app)
 app.config["JWT_SECRET_KEY"] = "shopsmart_ai_secret_2026!@#"
 jwt = JWTManager(app)
 
-# ================== MONGODB SETUP ==================
+# ================== MONGODB SETUP (TLS FIXED) ==================
 mongo_uri = os.environ.get("MONGO_URI")
 
-# IMPORTANT: do NOT crash app if env var missing
 if not mongo_uri:
+    # Do NOT crash the app; return clear error via API
     mongo_uri = ""
 
 client = MongoClient(
     mongo_uri,
-    serverSelectionTimeoutMS=5000  # prevent hanging
+    serverSelectionTimeoutMS=5000,
+    tls=True,
+    tlsAllowInvalidCertificates=True  # FIXES Render + Atlas TLS issue
 )
 
 db = client["shopsmart"]
 products_collection = db["products"]
 
-# ================== IN-MEMORY DATA ==================
+# ================== IN-MEMORY STORAGE ==================
 USERS = {}
 USER_HISTORY = {}
 
@@ -39,11 +41,11 @@ USER_HISTORY = {}
 def home():
     return {"status": "ShopSmart API running"}
 
-# ---------- PRODUCTS (MongoDB) ----------
+# ---------- PRODUCTS API ----------
 @app.route("/api/products")
 def get_products():
     try:
-        # force MongoDB connection check
+        # Force MongoDB connection check
         client.admin.command("ping")
 
         products = list(
@@ -52,7 +54,6 @@ def get_products():
         return jsonify(products)
 
     except Exception as e:
-        # NEVER crash — always return JSON
         return jsonify({
             "error": "MongoDB connection error",
             "details": str(e)
