@@ -5,25 +5,26 @@ from flask_jwt_extended import (
     jwt_required, get_jwt_identity
 )
 from pymongo import MongoClient
-import pandas as pd
 import os
 
+# ------------------ APP SETUP ------------------
 app = Flask(__name__)
 CORS(app)
 
-# JWT
 app.config["JWT_SECRET_KEY"] = "shopsmart_ai_secret_2026!@#"
 jwt = JWTManager(app)
 
-# MongoDB
+# ------------------ MONGODB ------------------
 mongo_uri = os.environ.get("MONGO_URI")
+
+if not mongo_uri:
+    raise Exception("MONGO_URI not set")
+
 client = MongoClient(mongo_uri)
 db = client["shopsmart"]
 products_collection = db["products"]
 
-# CSV (for recommendations)
-df = pd.read_csv("data/products.csv")
-
+# ------------------ IN-MEMORY DATA ------------------
 USERS = {}
 USER_HISTORY = {}
 
@@ -33,11 +34,14 @@ USER_HISTORY = {}
 def home():
     return {"status": "ShopSmart API running"}
 
-# ✅ PRODUCTS FROM MONGODB (MAIN)
+# ✅ PRODUCTS API (MongoDB only)
 @app.route("/api/products")
 def get_products():
-    products = list(products_collection.find({}, {"_id": 0}))
-    return jsonify(products)
+    try:
+        products = list(products_collection.find({}, {"_id": 0}))
+        return jsonify(products)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # AUTH
 @app.route("/api/auth/register", methods=["POST"])
@@ -62,15 +66,6 @@ def view(pid):
     user = get_jwt_identity()
     USER_HISTORY.setdefault(user, []).append(pid)
     return {"msg": "viewed"}
-
-# RECOMMENDATIONS
-@app.route("/api/recommend/user")
-@jwt_required()
-def recommend_user():
-    user = get_jwt_identity()
-    seen = set(USER_HISTORY.get(user, []))
-    recs = df[~df["product_id"].isin(seen)].head(5)
-    return jsonify(recs.to_dict(orient="records"))
 
 # ------------------ START ------------------
 if __name__ == "__main__":
