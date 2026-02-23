@@ -5,17 +5,6 @@
 </head>
 <body>
 
-<h2>ShopSmart AI Demo</h2>
-
-<input id="email" placeholder="email">
-<input id="pass" placeholder="password">
-<button onclick="login()">Login</button>
-
-<button onclick="loadProducts()">Load Products</button>
-<button onclick="userRecs()">My Recommendations</button>
-
-<body>
-
 <h2>ShopSmart AI</h2>
 
 <div>
@@ -46,6 +35,12 @@ async function login(){
   });
 
   const data = await res.json();
+
+  if(!res.ok){
+    alert(data.msg || "Login failed");
+    return;
+  }
+
   token = data.access_token;
   localStorage.setItem("token",token);
   alert("Login successful!");
@@ -81,6 +76,11 @@ async function userRecs(){
 
   const data = await res.json();
 
+  if(!res.ok){
+    alert(data.msg || "Error getting recommendations");
+    return;
+  }
+
   const container = document.getElementById("products");
   container.innerHTML = "";
 
@@ -93,39 +93,6 @@ async function userRecs(){
       </div>
     `;
   });
-}
-</script>
-
-</body>
-
-<script>
-const API = "https://shopsmart-ai.onrender.com";
-let token = localStorage.getItem("token");
-
-async function login(){
-  const res = await fetch(API+"/api/auth/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      email:email.value,
-      password:pass.value
-    })
-  });
-  const data = await res.json();
-  token = data.access_token;
-  localStorage.setItem("token",token);
-}
-
-async function loadProducts(){
-  const res = await fetch(API+"/api/products");
-  out.innerText = JSON.stringify(await res.json(),null,2);
-}
-
-async function userRecs(){
-  const res = await fetch(API+"/api/recommend/user",{
-    headers:{Authorization:`Bearer ${token}`}
-  });
-  out.innerText = JSON.stringify(await res.json(),null,2);
 }
 </script>
 
