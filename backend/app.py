@@ -9,6 +9,11 @@ client = MongoClient(mongo_uri)
 
 db = client["shopsmart"]
 products_collection = db["products"]
+@app.route("/api/products")
+def get_products():
+    products = list(products_collection.find({}, {"_id": 0}))
+    return jsonify(products)
+    
 import pandas as pd
 
 app = Flask(__name__)
