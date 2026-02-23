@@ -14,7 +14,89 @@
 <button onclick="loadProducts()">Load Products</button>
 <button onclick="userRecs()">My Recommendations</button>
 
-<pre id="out"></pre>
+<body>
+
+<h2>ShopSmart AI</h2>
+
+<div>
+  <input id="email" placeholder="email">
+  <input id="pass" type="password" placeholder="password">
+  <button onclick="login()">Login</button>
+</div>
+
+<hr>
+
+<button onclick="loadProducts()">Load Products</button>
+<button onclick="userRecs()">My Recommendations</button>
+
+<div id="products"></div>
+
+<script>
+const API = "https://shopsmart-ai.onrender.com";
+let token = localStorage.getItem("token");
+
+async function login(){
+  const res = await fetch(API+"/api/auth/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      email:email.value,
+      password:pass.value
+    })
+  });
+
+  const data = await res.json();
+  token = data.access_token;
+  localStorage.setItem("token",token);
+  alert("Login successful!");
+}
+
+async function loadProducts(){
+  const res = await fetch(API+"/api/products");
+  const data = await res.json();
+
+  const container = document.getElementById("products");
+  container.innerHTML = "";
+
+  data.forEach(p => {
+    container.innerHTML += `
+      <div style="border:1px solid #ccc;padding:10px;margin:10px;width:250px;display:inline-block">
+        <img src="${p.image_url}" width="200"><br>
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+      </div>
+    `;
+  });
+}
+
+async function userRecs(){
+  if(!token){
+    alert("Please login first");
+    return;
+  }
+
+  const res = await fetch(API+"/api/recommend/user",{
+    headers:{Authorization:`Bearer ${token}`}
+  });
+
+  const data = await res.json();
+
+  const container = document.getElementById("products");
+  container.innerHTML = "";
+
+  data.forEach(p => {
+    container.innerHTML += `
+      <div style="border:2px solid green;padding:10px;margin:10px;width:250px;display:inline-block">
+        <img src="${p.image_url}" width="200"><br>
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
 
 <script>
 const API = "https://shopsmart-ai.onrender.com";
