@@ -7,43 +7,58 @@ from flask_jwt_extended import (
 from pymongo import MongoClient
 import os
 
-# ------------------ APP SETUP ------------------
+# ================== APP SETUP ==================
 app = Flask(__name__)
 CORS(app)
 
 app.config["JWT_SECRET_KEY"] = "shopsmart_ai_secret_2026!@#"
 jwt = JWTManager(app)
 
-# ------------------ MONGODB ------------------
+# ================== MONGODB SETUP ==================
 mongo_uri = os.environ.get("MONGO_URI")
 
+# IMPORTANT: do NOT crash app if env var missing
 if not mongo_uri:
-    raise Exception("MONGO_URI not set")
+    mongo_uri = ""
 
-client = MongoClient(mongo_uri)
+client = MongoClient(
+    mongo_uri,
+    serverSelectionTimeoutMS=5000  # prevent hanging
+)
+
 db = client["shopsmart"]
 products_collection = db["products"]
 
-# ------------------ IN-MEMORY DATA ------------------
+# ================== IN-MEMORY DATA ==================
 USERS = {}
 USER_HISTORY = {}
 
-# ------------------ ROUTES ------------------
+# ================== ROUTES ==================
 
 @app.route("/")
 def home():
     return {"status": "ShopSmart API running"}
 
-# ✅ PRODUCTS API (MongoDB only)
+# ---------- PRODUCTS (MongoDB) ----------
 @app.route("/api/products")
 def get_products():
     try:
-        products = list(products_collection.find({}, {"_id": 0}))
-        return jsonify(products)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # force MongoDB connection check
+        client.admin.command("ping")
 
-# AUTH
+        products = list(
+            products_collection.find({}, {"_id": 0})
+        )
+        return jsonify(products)
+
+    except Exception as e:
+        # NEVER crash — always return JSON
+        return jsonify({
+            "error": "MongoDB connection error",
+            "details": str(e)
+        }), 500
+
+# ---------- AUTH ----------
 @app.route("/api/auth/register", methods=["POST"])
 def register():
     data = request.json
@@ -54,12 +69,14 @@ def register():
 def login():
     data = request.json
     user = USERS.get(data["email"])
+
     if not user or user["password"] != data["password"]:
-        return {"msg": "invalid"}, 401
+        return {"msg": "invalid credentials"}, 401
+
     token = create_access_token(identity=data["email"])
     return {"access_token": token, "name": user["name"]}
 
-# TRACK VIEW
+# ---------- TRACK VIEW ----------
 @app.route("/api/view/<int:pid>", methods=["POST"])
 @jwt_required()
 def view(pid):
@@ -67,6 +84,6 @@ def view(pid):
     USER_HISTORY.setdefault(user, []).append(pid)
     return {"msg": "viewed"}
 
-# ------------------ START ------------------
+# ================== START ==================
 if __name__ == "__main__":
     app.run()
