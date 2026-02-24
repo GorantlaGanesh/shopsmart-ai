@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Products</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+<style>
+body{margin:0;font-family:Poppins;background:#eef2f7}
+nav{
+  background:#667eea;color:white;
+  padding:15px;
+}
+.products{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.card{
+  background:white;
+  width:220px;
+  margin:15px;
+  padding:15px;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  transition:0.3s;
+  animation:card 0.6s ease;
+}
+@keyframes card{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1}
+}
+.card:hover{transform:translateY(-10px)}
+img{width:100%;border-radius:10px}
+button{
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:20px;
+  background:#764ba2;
+  color:white;
+}
+#cart{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  width:220px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <h3>Products</h3>
+</nav>
+
+<div class="products" id="products"></div>
+
+<div id="cart">
+  <h4>🛒 Cart</h4>
+  <div id="items"></div>
+  <button onclick="buy()">Buy Now</button>
+</div>
+
+<script>
+const API="https://shopsmart-ai.onrender.com";
+let cart=[];
+
+fetch(API+"/api/products")
+.then(res=>res.json())
+.then(data=>{
+  data.forEach(p=>{
+    products.innerHTML+=`
+      <div class="card">
+        <img src="${p.image_url}">
+        <h4>${p.name}</h4>
+        <p>₹${p.price}</p>
+        <p>⭐ ${p.rating}</p>
+        <button onclick='add(${JSON.stringify(p)})'>Add to Cart</button>
+      </div>
+    `;
+  });
+});
+
+function add(p){
+  cart.push(p);
+  render();
+}
+function render(){
+  items.innerHTML="";
+  cart.forEach((c,i)=>{
+    items.innerHTML+=`<p>${c.name} ❌</p>`;
+  });
+}
+function buy(){
+  alert("Purchase successful 🎉");
+  cart=[];
+  render();
+}
+</script>
+
+</body>
+</html>
