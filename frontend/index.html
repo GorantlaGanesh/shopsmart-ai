@@ -4,47 +4,79 @@
 <meta charset="UTF-8">
 <title>ShopSmart AI | Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
 <style>
+*{
+  box-sizing:border-box;
+  font-family:Poppins;
+}
 body{
   margin:0;
-  font-family:Poppins;
-  background:linear-gradient(135deg,#667eea,#764ba2);
   height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
+  background:linear-gradient(135deg,#667eea,#764ba2);
 }
+
+/* Login Box */
 .box{
   background:white;
-  width:320px;
+  width:330px;
   padding:30px;
-  border-radius:15px;
+  border-radius:16px;
   text-align:center;
-  box-shadow:0 15px 30px rgba(0,0,0,0.3);
-  animation:pop 0.6s ease;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+  animation:popIn 0.6s ease;
 }
-@keyframes pop{
-  from{opacity:0;transform:scale(0.8)}
+@keyframes popIn{
+  from{opacity:0;transform:scale(0.85)}
   to{opacity:1;transform:scale(1)}
 }
-input,button{
+
+h2{margin-bottom:15px}
+
+input{
   width:100%;
   padding:10px;
   margin:8px 0;
   border-radius:8px;
   border:1px solid #ddd;
+  outline:none;
 }
+input:focus{
+  box-shadow:0 0 8px rgba(102,126,234,0.6);
+}
+
 button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:20px;
   background:#667eea;
   color:white;
-  border:none;
+  font-size:15px;
   cursor:pointer;
   transition:0.3s;
 }
-button:hover{transform:scale(1.05)}
-a{color:#667eea;cursor:pointer}
+button:hover{
+  transform:scale(1.05);
+  background:#5a67d8;
+}
+
+p{
+  margin-top:12px;
+  font-size:14px;
+}
+a{
+  color:#667eea;
+  cursor:pointer;
+  font-weight:600;
+}
 </style>
 </head>
 
@@ -52,42 +84,85 @@ a{color:#667eea;cursor:pointer}
 
 <div class="box">
   <h2>ShopSmart AI 🚀</h2>
-  <input id="name" placeholder="Name (signup only)">
+
+  <!-- Name only for signup -->
+  <input id="name" placeholder="Name (for signup)">
+
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
+
   <button onclick="login()">Login</button>
+
   <p>New user? <a onclick="signup()">Create Account</a></p>
 </div>
 
 <script>
-const API="https://shopsmart-ai.onrender.com";
+const API = "https://shopsmart-ai.onrender.com";
 
+/* LOGIN */
 async function login(){
-  const res = await fetch(API+"/api/auth/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      email:email.value,
-      password:password.value
-    })
-  });
-  const data = await res.json();
-  localStorage.setItem("token",data.access_token);
-  localStorage.setItem("name",data.name || "User");
-  window.location="home.html";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(!email || !password){
+    alert("Please enter email and password");
+    return;
+  }
+
+  try{
+    const res = await fetch(API + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    if(!res.ok){
+      alert("Invalid email or password");
+      return;
+    }
+
+    const data = await res.json();
+
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("name", data.name || "User");
+
+    window.location.href = "home.html";
+  }
+  catch(error){
+    alert("Server error. Try again later.");
+    console.error(error);
+  }
 }
 
+/* SIGNUP */
 async function signup(){
-  await fetch(API+"/api/auth/register",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      name:name.value,
-      email:email.value,
-      password:password.value
-    })
-  });
-  alert("Account created! Please login.");
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(!name || !email || !password){
+    alert("Please fill all fields for signup");
+    return;
+  }
+
+  try{
+    const res = await fetch(API + "/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    if(!res.ok){
+      alert("User already exists or error occurred");
+      return;
+    }
+
+    alert("Account created successfully! Please login.");
+  }
+  catch(error){
+    alert("Server error during signup");
+    console.error(error);
+  }
 }
 </script>
 
