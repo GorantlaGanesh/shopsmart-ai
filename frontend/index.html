@@ -1,182 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ShopSmart AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>ShopSmart AI | Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
-  <style>
-    *{
-      font-family: 'Poppins', sans-serif;
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    body{
-      background: linear-gradient(135deg,#667eea,#764ba2);
-      color:#333;
-    }
-
-    nav{
-      background:white;
-      padding:15px 30px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    nav h2{
-      color:#764ba2;
-    }
-
-    nav button{
-      padding:8px 15px;
-      border:none;
-      background:#764ba2;
-      color:white;
-      border-radius:20px;
-      cursor:pointer;
-      transition:0.3s;
-    }
-
-    nav button:hover{
-      transform:scale(1.05);
-      background:#5a3c8c;
-    }
-
-    .container{
-      padding:30px;
-    }
-
-    .auth-box{
-      background:white;
-      padding:20px;
-      border-radius:15px;
-      width:300px;
-      margin:20px auto;
-      box-shadow:0 10px 20px rgba(0,0,0,0.2);
-      animation:fadeIn 0.7s ease-in-out;
-    }
-
-    input{
-      width:100%;
-      padding:10px;
-      margin:8px 0;
-      border-radius:8px;
-      border:1px solid #ddd;
-    }
-
-    .btn{
-      width:100%;
-      padding:10px;
-      border:none;
-      border-radius:20px;
-      background:#667eea;
-      color:white;
-      cursor:pointer;
-      transition:0.3s;
-    }
-
-    .btn:hover{
-      background:#5a67d8;
-      transform:scale(1.03);
-    }
-
-    .products{
-      display:flex;
-      flex-wrap:wrap;
-      justify-content:center;
-    }
-
-    .card{
-      background:white;
-      width:250px;
-      margin:15px;
-      padding:15px;
-      border-radius:15px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.2);
-      transition:0.3s;
-      animation:fadeUp 0.6s ease-in-out;
-    }
-
-    .card:hover{
-      transform:translateY(-10px);
-    }
-
-    .card img{
-      width:100%;
-      border-radius:10px;
-    }
-
-    .card button{
-      margin-top:10px;
-      padding:8px;
-      border:none;
-      background:#764ba2;
-      color:white;
-      border-radius:20px;
-      cursor:pointer;
-    }
-
-    @keyframes fadeIn{
-      from{opacity:0;transform:translateY(-20px);}
-      to{opacity:1;transform:translateY(0);}
-    }
-
-    @keyframes fadeUp{
-      from{opacity:0;transform:translateY(30px);}
-      to{opacity:1;transform:translateY(0);}
-    }
-
-    #cartBox{
-      position:fixed;
-      right:20px;
-      bottom:20px;
-      background:white;
-      padding:15px;
-      border-radius:15px;
-      width:250px;
-      box-shadow:0 10px 20px rgba(0,0,0,0.3);
-    }
-
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Poppins;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.box{
+  background:white;
+  width:320px;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 15px 30px rgba(0,0,0,0.3);
+  animation:pop 0.6s ease;
+}
+@keyframes pop{
+  from{opacity:0;transform:scale(0.8)}
+  to{opacity:1;transform:scale(1)}
+}
+input,button{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+button{
+  background:#667eea;
+  color:white;
+  border:none;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{transform:scale(1.05)}
+a{color:#667eea;cursor:pointer}
+</style>
 </head>
 
 <body>
 
-<nav>
+<div class="box">
   <h2>ShopSmart AI 🚀</h2>
-  <div>
-    <button onclick="loadProducts()">Products</button>
-    <button onclick="userRecs()">Recommendations</button>
-    <button onclick="logout()">Logout</button>
-  </div>
-</nav>
-
-<div class="auth-box">
+  <input id="name" placeholder="Name (signup only)">
   <input id="email" placeholder="Email">
-  <input id="pass" type="password" placeholder="Password">
-  <button class="btn" onclick="login()">Login</button>
-</div>
-
-<div class="container">
-  <div class="products" id="products"></div>
-</div>
-
-<div id="cartBox">
-  <h4>🛒 Cart</h4>
-  <div id="cartItems"></div>
-  <button class="btn" onclick="checkout()">Buy Now</button>
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p>New user? <a onclick="signup()">Create Account</a></p>
 </div>
 
 <script>
-const API = "https://shopsmart-ai.onrender.com";
-let token = localStorage.getItem("token");
-let cart = [];
+const API="https://shopsmart-ai.onrender.com";
 
 async function login(){
   const res = await fetch(API+"/api/auth/login",{
@@ -184,87 +68,26 @@ async function login(){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       email:email.value,
-      password:pass.value
+      password:password.value
     })
   });
-
   const data = await res.json();
-  token = data.access_token;
-  localStorage.setItem("token",token);
-  alert("Welcome back!");
+  localStorage.setItem("token",data.access_token);
+  localStorage.setItem("name",data.name || "User");
+  window.location="home.html";
 }
 
-function logout(){
-  localStorage.removeItem("token");
-  token=null;
-  alert("Logged out!");
-}
-
-async function loadProducts(){
-  const res = await fetch(API+"/api/products");
-  const data = await res.json();
-  renderProducts(data,false);
-}
-
-async function userRecs(){
-  if(!token){
-    alert("Login first!");
-    return;
-  }
-
-  const res = await fetch(API+"/api/recommend/user",{
-    headers:{Authorization:`Bearer ${token}`}
+async function signup(){
+  await fetch(API+"/api/auth/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      name:name.value,
+      email:email.value,
+      password:password.value
+    })
   });
-  const data = await res.json();
-  renderProducts(data,true);
-}
-
-function renderProducts(products,isRec){
-  const container = document.getElementById("products");
-  container.innerHTML="";
-
-  products.forEach(p=>{
-    container.innerHTML+=`
-      <div class="card">
-        <img src="${p.image_url}">
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        ${isRec ? "<p>⭐ AI Recommended</p>" : ""}
-        <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-      </div>
-    `;
-  });
-}
-
-function addToCart(product){
-  cart.push(product);
-  renderCart();
-}
-
-function renderCart(){
-  const c = document.getElementById("cartItems");
-  c.innerHTML="";
-  cart.forEach((item,i)=>{
-    c.innerHTML+=`
-      <p>${item.name} 
-      <button onclick="removeItem(${i})">❌</button></p>
-    `;
-  });
-}
-
-function removeItem(index){
-  cart.splice(index,1);
-  renderCart();
-}
-
-function checkout(){
-  if(cart.length===0){
-    alert("Cart empty!");
-    return;
-  }
-  alert("Purchase successful! 🎉");
-  cart=[];
-  renderCart();
+  alert("Account created! Please login.");
 }
 </script>
 
