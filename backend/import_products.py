@@ -3,12 +3,13 @@ from pymongo import MongoClient
 import certifi
 import os
 
-# MongoDB Atlas connection
+# Get MongoDB URI
 mongo_uri = os.environ.get("MONGO_URI")
 
 if not mongo_uri:
     raise Exception("MONGO_URI not set")
 
+# Connect to MongoDB Atlas
 client = MongoClient(
     mongo_uri,
     tls=True,
@@ -16,21 +17,19 @@ client = MongoClient(
 )
 
 db = client["shopsmart"]
-products = db["products"]
+collection = db["products"]
 
-# ✅ Correct CSV path
+# Load CSV (correct path)
 csv_path = "data/product.csv"
-
-# Read CSV
 df = pd.read_csv(csv_path)
 
-# Convert rows to dict
+# Convert to dict
 records = df.to_dict(orient="records")
 
-# Optional: clear old data
-products.delete_many({})
+# OPTIONAL: clear old data
+collection.delete_many({})
 
-# Insert into MongoDB
-products.insert_many(records)
+# Insert data
+collection.insert_many(records)
 
-print(f"✅ Inserted {len(records)} products into MongoDB")
+print(f"✅ Imported {len(records)} products into MongoDB")
