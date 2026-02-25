@@ -1,64 +1,536 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>ShopSmart AI | Home</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-body{margin:0;font-family:Poppins;background:#f5f6fa}
-nav{
-  background:#667eea;
-  color:white;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-}
-button{
-  margin-left:10px;
-  padding:8px 15px;
-  border:none;
-  border-radius:20px;
-  cursor:pointer;
-}
-.container{
-  text-align:center;
-  margin-top:80px;
-  animation:fade 0.7s ease;
-}
-@keyframes fade{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1}
-}
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #0f0e17;
+    --paper: #fffcf5;
+    --gold: #c9a84c;
+    --gold-light: #f0d688;
+    --cream: #f5f0e8;
+    --muted: #8a8278;
+    --card-bg: #ffffff;
+    --radius: 16px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.5;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,252,245,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    padding: 9px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    letter-spacing: 0.01em;
+  }
+
+  .nav-btn.ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid rgba(138,130,120,0.3);
+  }
+
+  .nav-btn.ghost:hover {
+    background: var(--cream);
+    color: var(--ink);
+    border-color: var(--gold);
+    transform: translateY(-1px);
+  }
+
+  .nav-btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .nav-btn.primary:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(201,168,76,0.35);
+  }
+
+  .nav-btn.danger {
+    background: transparent;
+    color: #c0392b;
+    border: 1.5px solid rgba(192,57,43,0.2);
+  }
+
+  .nav-btn.danger:hover {
+    background: rgba(192,57,43,0.06);
+    border-color: #c0392b;
+    transform: translateY(-1px);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 24px 60px;
+    position: relative;
+  }
+
+  /* Decorative ring */
+  .hero-ring {
+    position: absolute;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.15);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: ringGrow 1.2s ease-out forwards;
+    opacity: 0;
+  }
+
+  .hero-ring:nth-child(2) {
+    width: 700px; height: 700px;
+    border-color: rgba(201,168,76,0.08);
+    animation-delay: 0.2s;
+  }
+
+  @keyframes ringGrow {
+    from { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+    to { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  }
+
+  .hero-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: slideUp 0.7s 0.3s ease-out forwards;
+  }
+
+  .hero-greeting {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+    letter-spacing: -2px;
+    color: var(--ink);
+    opacity: 0;
+    animation: slideUp 0.7s 0.45s ease-out forwards;
+  }
+
+  .hero-greeting em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--muted);
+    text-align: center;
+    max-width: 420px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: slideUp 0.7s 0.6s ease-out forwards;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── CTA BUTTONS ── */
+  .hero-ctas {
+    margin-top: 40px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: slideUp 0.7s 0.75s ease-out forwards;
+  }
+
+  .cta-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 30px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .cta-btn.main {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 0 4px 24px rgba(15,14,23,0.18);
+  }
+
+  .cta-btn.main:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(201,168,76,0.4);
+  }
+
+  .cta-btn.outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid rgba(15,14,23,0.2);
+  }
+
+  .cta-btn.outline:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-3px);
+    background: rgba(201,168,76,0.05);
+  }
+
+  .btn-icon {
+    width: 20px; height: 20px;
+    opacity: 0.85;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    margin-top: 60px;
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: slideUp 0.7s 0.9s ease-out forwards;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .stat-div {
+    width: 1px;
+    height: 40px;
+    background: rgba(138,130,120,0.25);
+    align-self: center;
+  }
+
+  /* ── FEATURE CARDS ── */
+  .cards-section {
+    padding: 0 32px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 48px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: var(--radius);
+    padding: 32px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(15,14,23,0.05);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(201,168,76,0.4);
+    box-shadow: 0 16px 40px rgba(15,14,23,0.1);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    background: var(--cream);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .card:hover .card-icon { transform: scale(1.15) rotate(-5deg); }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .card-arrow {
+    position: absolute;
+    bottom: 28px; right: 28px;
+    width: 32px; height: 32px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: all 0.3s ease;
+  }
+
+  .card-arrow svg { width: 14px; fill: var(--paper); }
+  .card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+
+  /* ── FOOTER STRIP ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    nav { padding: 14px 20px; }
+    .hero-greeting { letter-spacing: -1px; }
+    .stats-row { gap: 20px; }
+    .stat-div { display: none; }
+  }
 </style>
 </head>
-
 <body>
 
+<!-- NAV -->
 <nav>
-  <h3>ShopSmart AI</h3>
-  <div>
-    <button onclick="go('products.html')">Products</button>
-    <button onclick="go('recs.html')">AI Recommendations</button>
-    <button onclick="logout()">Logout</button>
+  <div class="nav-brand">
+    <div class="brand-dot"></div>
+    ShopSmart AI
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn ghost" onclick="go('products.html')">Products</button>
+    <button class="nav-btn primary" onclick="go('recs.html')">AI Picks</button>
+    <button class="nav-btn danger" onclick="logout()">Sign out</button>
   </div>
 </nav>
 
-<div class="container">
-  <h1>Welcome, <span id="user"></span> 👋</h1>
-  <p>Your smart shopping assistant</p>
-</div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-ring"></div>
+  <div class="hero-ring"></div>
+
+  <div class="hero-tag">✦ Your personal AI stylist</div>
+
+  <h1 class="hero-greeting">
+    Good to see you,<br><em id="user-name">Shopper</em>.
+  </h1>
+
+  <p class="hero-sub">
+    Discover products curated just for you — powered by taste, not trends.
+  </p>
+
+  <div class="hero-ctas">
+    <button class="cta-btn main" onclick="go('recs.html')">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      View My Picks
+    </button>
+    <button class="cta-btn outline" onclick="go('products.html')">
+      Browse All Products
+    </button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num">2.4k</div>
+      <div class="stat-label">Products</div>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat">
+      <div class="stat-num">98%</div>
+      <div class="stat-label">Match Accuracy</div>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat">
+      <div class="stat-num">4.9★</div>
+      <div class="stat-label">User Rating</div>
+    </div>
+  </div>
+</section>
+
+<!-- CARDS -->
+<section class="cards-section">
+  <div class="section-label">What you can do</div>
+  <div class="cards-grid">
+
+    <div class="card" onclick="go('recs.html')">
+      <div class="card-icon">✦</div>
+      <div class="card-title">AI Recommendations</div>
+      <div class="card-desc">Get hyper-personalized picks based on your style, budget, and past choices.</div>
+      <div class="card-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div class="card" onclick="go('products.html')">
+      <div class="card-icon">◈</div>
+      <div class="card-title">Browse Catalog</div>
+      <div class="card-desc">Explore thousands of curated products across every category imaginable.</div>
+      <div class="card-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div class="card" onclick="go('wishlist.html')">
+      <div class="card-icon">◇</div>
+      <div class="card-title">Saved Items</div>
+      <div class="card-desc">Revisit items you've saved and track price drops in real-time.</div>
+      <div class="card-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>© 2025 ShopSmart AI — designed for discerning shoppers</footer>
 
 <script>
-document.getElementById("user").innerText =
-  localStorage.getItem("name");
+  const raw = localStorage.getItem("name");
+  if (raw) document.getElementById("user-name").textContent = raw;
 
-function go(page){window.location=page}
-function logout(){
-  localStorage.clear();
-  window.location="index.html";
-}
+  function go(page) { window.location = page; }
+
+  function logout() {
+    localStorage.clear();
+    window.location = "index.html";
+  }
 </script>
-
 </body>
 </html>
