@@ -515,35 +515,66 @@
 </div>
 
 <script>
-  const RECS = [
-    { id:1, name:"Sony WH-1000XM5 Headphones", cat:"tech", why:"You love premium audio and clean aesthetics — this is the gold standard.", price:349, match:99, emoji:"🎧", gradient:"#e8eeff,#d0d8ff", featured:true },
-    { id:2, name:"Leather Card Wallet", cat:"fashion", why:"Slim, minimal, full-grain leather. Matches your aesthetic perfectly.", price:65, match:97, emoji:"👛", gradient:"#fdf0e0,#f8debb" },
-    { id:3, name:"Aesop Hand Cream", cat:"beauty", why:"Cult-favorite, subtle scent, beloved by minimalists.", price:42, match:95, emoji:"🌿", gradient:"#ebf5eb,#d4e8d4" },
-    { id:4, name:"Lamy Safari Pen", cat:"tech", why:"Based on your journal habits, you'll love this precision writer.", price:38, match:93, emoji:"🖊️", gradient:"#fff5e8,#ffe8c8" },
-    { id:5, name:"Parachute Linen Sheets", cat:"home", why:"Hotel-quality softness. Your searches suggest you value great sleep.", price:199, match:94, emoji:"🛏️", gradient:"#f5f5f5,#e8e8e8" },
-    { id:6, name:"Nespresso Vertuo Next", cat:"home", why:"Morning coffee is important to you — this upgrades the ritual.", price:179, match:91, emoji:"☕", gradient:"#fff0e0,#fde0c0" },
-    { id:7, name:"Allbirds Tree Runner", cat:"fashion", why:"Sustainable, comfortable, minimal. Your trifecta.", price:125, match:96, emoji:"👟", gradient:"#f0f5ef,#dce8db" },
-    { id:8, name:"Retinol Night Serum", cat:"beauty", why:"Consistently top-rated. Pairs with your current routine.", price:78, match:90, emoji:"✨", gradient:"#f8f0ff,#edd8ff" },
-  ];
+  const API = "http://localhost:5000";
+
+  // Auth guard
+  if (!localStorage.getItem('token')) window.location = 'index.html';
 
   let savedItems = new Set();
+  let ALL_RECS = [];
+
+  function inferEmoji(name) {
+    const n = name.toLowerCase();
+    if (/iphone|phone/.test(n)) return '📱';
+    if (/samsung/.test(n)) return '📲';
+    if (/headphone|earbud|sony/.test(n)) return '🎧';
+    if (/laptop/.test(n)) return '💻';
+    if (/keyboard/.test(n)) return '⌨️';
+    if (/watch/.test(n)) return '⌚';
+    if (/bag|tote/.test(n)) return '👜';
+    if (/wallet/.test(n)) return '👛';
+    if (/shoe|sneaker/.test(n)) return '👟';
+    return '🛍️';
+  }
+
+  const GRADIENTS = [
+    '#e8eeff,#d0d8ff','#fdf0e0,#f8debb','#ebf5eb,#d4e8d4',
+    '#fef9e8,#fdf0c0','#fff5f5,#ffe0e0','#f0f8ff,#d8eeff',
+    '#fff0f8,#ffd8ef','#f5f5f5,#e8e8e8'
+  ];
+
+  const WHY_PHRASES = [
+    "Top-rated pick based on your taste profile.",
+    "Highly recommended by shoppers like you.",
+    "Matches your quality-first preference perfectly.",
+    "One of our most popular items this week.",
+    "Excellent value — consistently loved by our users.",
+    "A crowd favorite that fits your style.",
+    "Our AI flagged this as a strong match for you.",
+    "Based on your browsing, you'll love this."
+  ];
 
   function renderRecs(list) {
     const grid = document.getElementById('recs-grid');
+    document.querySelector('.insight-card:nth-child(2) .insight-val').textContent = list.length;
+    if (!list.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:12px">🛍</div><div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink)">No recommendations yet</div><p style="margin-top:8px">Seed some products first via <code>/api/seed</code></p></div>`;
+      return;
+    }
     grid.innerHTML = list.map((r, i) => `
-      <div class="rec-card ${r.featured ? 'featured' : ''}" style="animation-delay:${i * 0.07}s">
+      <div class="rec-card ${i === 0 ? 'featured' : ''}" style="animation-delay:${i * 0.07}s">
         <div class="card-visual" style="background:linear-gradient(135deg,${r.gradient})">
           <div class="visual-inner">${r.emoji}</div>
         </div>
         <div class="card-content">
           <div class="rec-meta">
-            <span class="rec-cat">${r.cat}</span>
+            <span class="rec-cat">⭐ ${r.rating}</span>
             <span class="match-badge">✦ ${r.match}% match</span>
           </div>
           <div class="rec-name">${r.name}</div>
           <div class="rec-why">"${r.why}"</div>
           <div class="rec-footer">
-            <div class="rec-price">$${r.price}</div>
+            <div class="rec-price">₹${r.price.toLocaleString('en-IN')}</div>
             <div class="rec-action">
               <button class="btn-save ${savedItems.has(r.id) ? 'saved' : ''}" id="save-${r.id}" onclick="toggleSave(${r.id})">
                 ${savedItems.has(r.id) ? '❤️ Saved' : '🤍 Save'}
@@ -556,29 +587,48 @@
     `).join('');
   }
 
+  async function loadRecs() {
+    try {
+      const res  = await fetch(`${API}/api/products`);
+      const data = await res.json();
+      // Sort by rating descending, assign match scores
+      ALL_RECS = [...data]
+        .sort((a, b) => b.rating - a.rating)
+        .map((p, i) => ({
+          ...p,
+          emoji: inferEmoji(p.name),
+          gradient: GRADIENTS[i % GRADIENTS.length],
+          match: Math.max(85, Math.round(p.rating * 20) - i),
+          why: WHY_PHRASES[i % WHY_PHRASES.length]
+        }));
+      renderRecs(ALL_RECS);
+    } catch (e) {
+      document.getElementById('recs-grid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:2rem">⚠️</div><p style="margin-top:12px">Cannot reach server. Is Flask running on port 5000?</p></div>`;
+    }
+    document.getElementById('loading').classList.add('hidden');
+  }
+
   function toggleSave(id) {
-    if (savedItems.has(id)) { savedItems.delete(id); }
-    else { savedItems.add(id); }
+    if (savedItems.has(id)) savedItems.delete(id);
+    else savedItems.add(id);
     document.getElementById('saved-count').textContent = savedItems.size;
-    renderRecs(RECS);
+    renderRecs(ALL_RECS);
   }
 
   function toggleTaste(el) { el.classList.toggle('active'); }
 
   function refreshRecs() {
     const btn = document.getElementById('refresh-btn');
-    btn.classList.add('spinning');
-    btn.disabled = true;
+    btn.classList.add('spinning'); btn.disabled = true;
     const overlay = document.getElementById('loading');
-    overlay.classList.remove('hidden');
-    overlay.style.opacity = '1';
+    overlay.classList.remove('hidden'); overlay.style.opacity = '1';
+    ALL_RECS = [...ALL_RECS].sort(() => Math.random() - 0.5);
     setTimeout(() => {
-      const shuffled = [...RECS].sort(() => Math.random() - 0.5);
-      renderRecs(shuffled);
+      renderRecs(ALL_RECS);
       overlay.classList.add('hidden');
-      btn.classList.remove('spinning');
-      btn.disabled = false;
-    }, 1800);
+      btn.classList.remove('spinning'); btn.disabled = false;
+    }, 1400);
   }
 
   function go(page) { window.location = page; }
@@ -587,11 +637,7 @@
   // Boot
   const name = localStorage.getItem('name');
   if (name) document.getElementById('banner-name').textContent = `${name}.`;
-
-  setTimeout(() => {
-    document.getElementById('loading').classList.add('hidden');
-    renderRecs(RECS);
-  }, 1800);
+  loadRecs();
 </script>
 </body>
 </html>
