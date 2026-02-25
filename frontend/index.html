@@ -2,169 +2,464 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ShopSmart AI | Login</title>
+<title>ShopSmart AI | Welcome</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-*{
-  box-sizing:border-box;
-  font-family:Poppins;
-}
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-}
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Login Box */
-.box{
-  background:white;
-  width:330px;
-  padding:30px;
-  border-radius:16px;
-  text-align:center;
-  box-shadow:0 20px 40px rgba(0,0,0,0.3);
-  animation:popIn 0.6s ease;
-}
-@keyframes popIn{
-  from{opacity:0;transform:scale(0.85)}
-  to{opacity:1;transform:scale(1)}
-}
+  :root {
+    --ink: #0f0e17;
+    --paper: #fffcf5;
+    --gold: #c9a84c;
+    --gold-light: #f0d688;
+    --cream: #f5f0e8;
+    --muted: #8a8278;
+    --error: #c0392b;
+  }
 
-h2{margin-bottom:15px}
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ink);
+    overflow: hidden;
+  }
 
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:8px;
-  border:1px solid #ddd;
-  outline:none;
-}
-input:focus{
-  box-shadow:0 0 8px rgba(102,126,234,0.6);
-}
+  /* noise */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
 
-button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border:none;
-  border-radius:20px;
-  background:#667eea;
-  color:white;
-  font-size:15px;
-  cursor:pointer;
-  transition:0.3s;
-}
-button:hover{
-  transform:scale(1.05);
-  background:#5a67d8;
-}
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+  }
 
-p{
-  margin-top:12px;
-  font-size:14px;
-}
-a{
-  color:#667eea;
-  cursor:pointer;
-  font-weight:600;
-}
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    position: relative;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px;
+    overflow: hidden;
+  }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+  }
+
+  .brand-dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.6; }
+  }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--paper);
+    letter-spacing: -0.3px;
+  }
+
+  .left-center {
+    z-index: 1;
+  }
+
+  .left-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+    color: var(--paper);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+  }
+
+  .left-tagline em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .left-sub {
+    font-size: 0.95rem;
+    color: rgba(255,252,245,0.45);
+    font-weight: 300;
+    max-width: 320px;
+    line-height: 1.7;
+  }
+
+  /* decorative floating badges */
+  .float-badge {
+    position: absolute;
+    background: rgba(255,252,245,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: var(--paper);
+    font-size: 0.82rem;
+    backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+
+  .float-badge .badge-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .badge-1 { top: 28%; right: 10%; animation: floatY 4s ease-in-out infinite; }
+  .badge-2 { bottom: 28%; right: 15%; animation: floatY 4s 1.5s ease-in-out infinite; }
+
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .left-footer {
+    font-size: 0.78rem;
+    color: rgba(255,252,245,0.25);
+    z-index: 1;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 64px;
+    overflow-y: auto;
+  }
+
+  .auth-box {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--cream);
+    border-radius: 100px;
+    padding: 4px;
+    margin-bottom: 36px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .tab-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 0 4px 12px rgba(15,14,23,0.2);
+  }
+
+  .auth-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.8px;
+    margin-bottom: 6px;
+  }
+
+  .auth-sub {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 32px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    border: 1.5px solid rgba(138,130,120,0.25);
+    border-radius: 12px;
+    background: white;
+    color: var(--ink);
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.1);
+  }
+
+  input::placeholder { color: rgba(138,130,120,0.5); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 0;
+  }
+
+  .submit-btn:hover::before { transform: translateX(0); }
+  .submit-btn:hover { color: var(--ink); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(201,168,76,0.3); }
+  .submit-btn span { position: relative; z-index: 1; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(138,130,120,0.2);
+  }
+
+  .toggle-msg {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 20px;
+  }
+
+  .toggle-link {
+    color: var(--gold);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .toggle-link:hover { opacity: 0.7; }
+
+  .error-msg {
+    background: rgba(192,57,43,0.08);
+    border: 1px solid rgba(192,57,43,0.2);
+    color: var(--error);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* panel transitions */
+  .form-panel { display: none; }
+  .form-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; }
+    .left-panel { display: none; }
+    .right-panel { padding: 40px 28px; }
+  }
 </style>
 </head>
-
 <body>
 
-<div class="box">
-  <h2>ShopSmart AI 🚀</h2>
+<div class="layout">
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-name">ShopSmart AI</span>
+    </div>
 
-  <!-- Name only for signup -->
-  <input id="name" placeholder="Name (for signup)">
+    <div class="left-center">
+      <h1 class="left-tagline">
+        Shop smarter,<br>not <em>harder.</em>
+      </h1>
+      <p class="left-sub">
+        Your AI-powered shopping assistant that learns your taste and curates only what you'll love.
+      </p>
+    </div>
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+    <div class="float-badge badge-1">
+      <span class="badge-num">2.4k</span>
+      Products curated
+    </div>
+    <div class="float-badge badge-2">
+      <span class="badge-num">98%</span>
+      Match accuracy
+    </div>
 
-  <button onclick="login()">Login</button>
+    <div class="left-footer">© 2025 ShopSmart AI</div>
+  </div>
 
-  <p>New user? <a onclick="signup()">Create Account</a></p>
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="auth-box">
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="form-panel active" id="login-panel">
+        <h2 class="auth-title">Welcome back.</h2>
+        <p class="auth-sub">Sign in to see your personalized picks.</p>
+        <div class="error-msg" id="login-error">Invalid email or password.</div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••">
+        </div>
+        <button class="submit-btn" onclick="handleLogin()"><span>Sign In →</span></button>
+        <div class="toggle-msg">
+          No account? <span class="toggle-link" onclick="switchTab('signup')">Create one free</span>
+        </div>
+      </div>
+
+      <!-- SIGNUP -->
+      <div class="form-panel" id="signup-panel">
+        <h2 class="auth-title">Join ShopSmart.</h2>
+        <p class="auth-sub">Create your account and start discovering.</p>
+        <div class="error-msg" id="signup-error">Please fill all fields.</div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signup-name" placeholder="Alex Johnson">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signup-email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signup-pass" placeholder="Min. 6 characters">
+        </div>
+        <button class="submit-btn" onclick="handleSignup()"><span>Create Account →</span></button>
+        <div class="toggle-msg">
+          Already a member? <span class="toggle-link" onclick="switchTab('login')">Sign in</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script>
-const API = "https://shopsmart-ai.onrender.com";
-
-/* LOGIN */
-async function login(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  if(!email || !password){
-    alert("Please enter email and password");
-    return;
-  }
-
-  try{
-    const res = await fetch(API + "/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
     });
-
-    if(!res.ok){
-      alert("Invalid email or password");
-      return;
-    }
-
-    const data = await res.json();
-
-    localStorage.setItem("token", data.access_token);
-    localStorage.setItem("name", data.name || "User");
-
-    window.location.href = "home.html";
-  }
-  catch(error){
-    alert("Server error. Try again later.");
-    console.error(error);
-  }
-}
-
-/* SIGNUP */
-async function signup(){
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  if(!name || !email || !password){
-    alert("Please fill all fields for signup");
-    return;
+    document.getElementById('login-panel').classList.toggle('active', tab === 'login');
+    document.getElementById('signup-panel').classList.toggle('active', tab === 'signup');
   }
 
-  try{
-    const res = await fetch(API + "/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
-    });
-
-    if(!res.ok){
-      alert("User already exists or error occurred");
-      return;
-    }
-
-    alert("Account created successfully! Please login.");
+  function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const err = document.getElementById('login-error');
+    if (!email || !pass) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    // Save mock session
+    const name = email.split('@')[0];
+    localStorage.setItem('name', name.charAt(0).toUpperCase() + name.slice(1));
+    localStorage.setItem('email', email);
+    window.location = 'home.html';
   }
-  catch(error){
-    alert("Server error during signup");
-    console.error(error);
+
+  function handleSignup() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const pass = document.getElementById('signup-pass').value;
+    const err = document.getElementById('signup-error');
+    if (!name || !email || !pass || pass.length < 6) { err.style.display = 'block'; return; }
+    err.style.display = 'none';
+    localStorage.setItem('name', name.split(' ')[0]);
+    localStorage.setItem('email', email);
+    window.location = 'home.html';
   }
-}
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('login-panel').classList.contains('active')) handleLogin();
+    else handleSignup();
+  });
 </script>
-
 </body>
 </html>
