@@ -1,41 +1,597 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>AI Recommendations</title>
+<meta charset="UTF-8">
+<title>ShopSmart AI | Your Picks</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-body{font-family:Poppins;background:#f0f3ff}
-.card{border-left:6px solid gold}
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #0f0e17;
+    --paper: #fffcf5;
+    --gold: #c9a84c;
+    --gold-light: #f0d688;
+    --cream: #f5f0e8;
+    --muted: #8a8278;
+    --radius: 16px;
+  }
+
+  html, body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    padding: 18px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,252,245,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700;
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+
+  .brand-dot {
+    width: 8px; height: 8px; background: var(--gold);
+    border-radius: 50%; animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6} }
+
+  .nav-btn {
+    padding: 9px 20px; border: none; border-radius: 100px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); margin-left: 8px;
+  }
+  .nav-btn.ghost { background: transparent; color: var(--muted); border: 1.5px solid rgba(138,130,120,0.3); }
+  .nav-btn.ghost:hover { background: var(--cream); color: var(--ink); border-color: var(--gold); transform: translateY(-1px); }
+  .nav-btn.primary { background: var(--ink); color: var(--paper); }
+  .nav-btn.primary:hover { background: var(--gold); color: var(--ink); transform: translateY(-1px); }
+
+  /* ── HERO BANNER ── */
+  .ai-banner {
+    margin: 32px 48px;
+    background: var(--ink);
+    border-radius: 24px;
+    padding: 48px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: slideUp 0.6s 0.1s ease-out forwards;
+  }
+
+  .ai-banner::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%);
+    right: -100px; top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .banner-left { z-index: 1; }
+
+  .banner-tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .ai-dot {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .banner-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    color: var(--paper);
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+
+  .banner-title em { font-style: italic; color: var(--gold); }
+
+  .banner-sub {
+    font-size: 0.9rem;
+    color: rgba(255,252,245,0.5);
+    font-weight: 300;
+    max-width: 360px;
+    line-height: 1.7;
+  }
+
+  .banner-right { z-index: 1; flex-shrink: 0; }
+
+  .refresh-btn {
+    padding: 13px 28px;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .refresh-btn:hover { transform: scale(1.05); box-shadow: 0 10px 28px rgba(201,168,76,.4); }
+  .refresh-btn.spinning .spin-icon { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TASTE PROFILE ── */
+  .taste-section {
+    padding: 0 48px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: slideUp 0.6s 0.2s ease-out forwards;
+  }
+
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: var(--gold);
+  }
+
+  .taste-tags {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+
+  .taste-tag {
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1.5px solid transparent;
+  }
+
+  .taste-tag.active {
+    background: var(--ink); color: var(--paper);
+  }
+
+  .taste-tag:not(.active) {
+    background: var(--cream);
+    color: var(--muted);
+    border-color: rgba(201,168,76,0.2);
+  }
+
+  .taste-tag:not(.active):hover {
+    border-color: var(--gold); color: var(--ink);
+  }
+
+  /* ── MATCH SCORE ── */
+  .match-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+  }
+
+  /* ── RECOMMENDATIONS GRID ── */
+  .recs-section {
+    padding: 0 48px 80px;
+    opacity: 0;
+    animation: slideUp 0.6s 0.35s ease-out forwards;
+  }
+
+  .recs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .rec-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid rgba(201,168,76,0.1);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(15,14,23,0.04);
+    position: relative;
+    opacity: 0;
+    animation: cardIn 0.5s ease-out forwards;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .rec-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(201,168,76,0.4);
+    box-shadow: 0 20px 48px rgba(15,14,23,0.1);
+  }
+
+  .rec-card.featured {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .card-visual {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .rec-card.featured .card-visual { height: 100%; min-height: 240px; }
+
+  .visual-inner {
+    transition: transform 0.4s ease;
+    position: relative; z-index: 1;
+  }
+  .rec-card:hover .visual-inner { transform: scale(1.1) rotate(-3deg); }
+
+  .card-content { padding: 22px; }
+  .rec-card.featured .card-content { padding: 32px; display: flex; flex-direction: column; justify-content: center; }
+
+  .rec-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .rec-cat {
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gold); font-weight: 500;
+  }
+
+  .rec-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 8px; line-height: 1.3;
+  }
+
+  .rec-card.featured .rec-name { font-size: 1.5rem; }
+
+  .rec-why {
+    font-size: 0.82rem; color: var(--muted);
+    font-weight: 300; line-height: 1.6;
+    margin-bottom: 18px;
+  }
+
+  .rec-card.featured .rec-why { font-size: 0.9rem; }
+
+  .rec-footer {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .rec-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700; color: var(--ink);
+  }
+
+  .rec-card.featured .rec-price { font-size: 1.6rem; }
+
+  .rec-action {
+    display: flex; gap: 8px;
+  }
+
+  .btn-save, .btn-buy {
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    border: none;
+  }
+
+  .btn-save {
+    background: var(--cream);
+    color: var(--muted);
+    border: 1.5px solid rgba(201,168,76,0.2);
+  }
+  .btn-save:hover { border-color: var(--gold); color: var(--ink); }
+  .btn-save.saved { background: rgba(201,168,76,0.15); color: var(--gold); border-color: var(--gold); }
+
+  .btn-buy {
+    background: var(--ink); color: var(--paper);
+  }
+  .btn-buy:hover { background: var(--gold); color: var(--ink); transform: scale(1.05); }
+
+  .rec-card.featured .btn-save, .rec-card.featured .btn-buy { padding: 11px 22px; font-size: 0.9rem; }
+
+  /* ── LOADING STATE ── */
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(255,252,245,0.95);
+    backdrop-filter: blur(8px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 500;
+    transition: opacity 0.4s ease;
+  }
+
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .loader-ring {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 3px solid rgba(201,168,76,0.2);
+    border-top-color: var(--gold);
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  .loader-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .loader-sub { font-size: 0.82rem; color: var(--muted); font-weight: 300; }
+
+  /* ── INSIGHT ROW ── */
+  .insights-row {
+    display: flex; gap: 16px; margin: 0 48px 32px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: slideUp 0.6s 0.25s ease-out forwards;
+  }
+
+  .insight-card {
+    flex: 1; min-width: 160px;
+    background: white;
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 8px rgba(15,14,23,0.04);
+  }
+
+  .insight-icon { font-size: 1.6rem; }
+
+  .insight-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700; color: var(--ink); line-height: 1;
+  }
+
+  .insight-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+
+  @media (max-width: 900px) {
+    .rec-card.featured { grid-column: span 1; display: block; }
+    .rec-card.featured .card-visual { height: 200px; }
+    .ai-banner { flex-direction: column; padding: 32px; }
+    nav, .ai-banner, .taste-section, .recs-section, .insights-row { margin-left: 20px; margin-right: 20px; padding-left: 0; padding-right: 0; }
+    .ai-banner { margin: 20px; }
+    .taste-section { padding: 0 20px; }
+    .recs-section { padding: 0 20px 60px; }
+    .insights-row { margin: 0 20px 24px; }
+    nav { padding: 14px 20px; }
+  }
 </style>
 </head>
-
 <body>
 
-<h2 style="text-align:center">🤖 AI Recommended Products</h2>
-<div id="products"></div>
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Curating your picks…</div>
+  <div class="loader-sub">Analyzing your taste profile</div>
+</div>
+
+<nav>
+  <div class="nav-brand" onclick="go('home.html')">
+    <div class="brand-dot"></div>
+    ShopSmart AI
+  </div>
+  <div>
+    <button class="nav-btn ghost" onclick="go('products.html')">All Products</button>
+    <button class="nav-btn primary" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<!-- AI BANNER -->
+<div class="ai-banner">
+  <div class="banner-left">
+    <div class="banner-tag"><div class="ai-dot"></div> AI-Powered Curation</div>
+    <h1 class="banner-title">Picks made just for<br><em id="banner-name">you.</em></h1>
+    <p class="banner-sub">Our AI analyzes your style, browsing patterns, and preferences to surface products you'll actually love.</p>
+  </div>
+  <div class="banner-right">
+    <button class="refresh-btn" id="refresh-btn" onclick="refreshRecs()">
+      <span class="spin-icon">✦</span> Refresh Picks
+    </button>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<div class="insights-row">
+  <div class="insight-card">
+    <div class="insight-icon">🎯</div>
+    <div>
+      <div class="insight-val">98%</div>
+      <div class="insight-lbl">Match Score</div>
+    </div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-icon">✦</div>
+    <div>
+      <div class="insight-val">12</div>
+      <div class="insight-lbl">Items Picked</div>
+    </div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-icon">❤️</div>
+    <div>
+      <div class="insight-val" id="saved-count">0</div>
+      <div class="insight-lbl">Saved Items</div>
+    </div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-icon">💰</div>
+    <div>
+      <div class="insight-val">$890</div>
+      <div class="insight-lbl">Avg Budget</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASTE PROFILE -->
+<div class="taste-section">
+  <div class="section-header">
+    <div class="section-title">Your Taste Profile</div>
+  </div>
+  <div class="taste-tags" id="taste-tags">
+    <span class="taste-tag active" onclick="toggleTaste(this)">Minimalist</span>
+    <span class="taste-tag active" onclick="toggleTaste(this)">Tech Savvy</span>
+    <span class="taste-tag active" onclick="toggleTaste(this)">Quality First</span>
+    <span class="taste-tag" onclick="toggleTaste(this)">Sustainable</span>
+    <span class="taste-tag" onclick="toggleTaste(this)">Luxury</span>
+    <span class="taste-tag" onclick="toggleTaste(this)">Streetwear</span>
+    <span class="taste-tag" onclick="toggleTaste(this)">Wellness</span>
+    <span class="taste-tag" onclick="toggleTaste(this)">Home Decor</span>
+  </div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div class="recs-section">
+  <div class="section-header">
+    <div class="section-title">Recommended For You</div>
+    <div style="font-size:0.82rem;color:var(--muted)">Updated just now</div>
+  </div>
+  <div class="recs-grid" id="recs-grid"></div>
+</div>
 
 <script>
-const API="https://shopsmart-ai.onrender.com";
-const token=localStorage.getItem("token");
+  const RECS = [
+    { id:1, name:"Sony WH-1000XM5 Headphones", cat:"tech", why:"You love premium audio and clean aesthetics — this is the gold standard.", price:349, match:99, emoji:"🎧", gradient:"#e8eeff,#d0d8ff", featured:true },
+    { id:2, name:"Leather Card Wallet", cat:"fashion", why:"Slim, minimal, full-grain leather. Matches your aesthetic perfectly.", price:65, match:97, emoji:"👛", gradient:"#fdf0e0,#f8debb" },
+    { id:3, name:"Aesop Hand Cream", cat:"beauty", why:"Cult-favorite, subtle scent, beloved by minimalists.", price:42, match:95, emoji:"🌿", gradient:"#ebf5eb,#d4e8d4" },
+    { id:4, name:"Lamy Safari Pen", cat:"tech", why:"Based on your journal habits, you'll love this precision writer.", price:38, match:93, emoji:"🖊️", gradient:"#fff5e8,#ffe8c8" },
+    { id:5, name:"Parachute Linen Sheets", cat:"home", why:"Hotel-quality softness. Your searches suggest you value great sleep.", price:199, match:94, emoji:"🛏️", gradient:"#f5f5f5,#e8e8e8" },
+    { id:6, name:"Nespresso Vertuo Next", cat:"home", why:"Morning coffee is important to you — this upgrades the ritual.", price:179, match:91, emoji:"☕", gradient:"#fff0e0,#fde0c0" },
+    { id:7, name:"Allbirds Tree Runner", cat:"fashion", why:"Sustainable, comfortable, minimal. Your trifecta.", price:125, match:96, emoji:"👟", gradient:"#f0f5ef,#dce8db" },
+    { id:8, name:"Retinol Night Serum", cat:"beauty", why:"Consistently top-rated. Pairs with your current routine.", price:78, match:90, emoji:"✨", gradient:"#f8f0ff,#edd8ff" },
+  ];
 
-fetch(API+"/api/recommend/user",{
-  headers:{Authorization:`Bearer ${token}`}
-})
-.then(res=>res.json())
-.then(data=>{
-  data.forEach(p=>{
-    products.innerHTML+=`
-      <div class="card">
-        <h4>${p.name}</h4>
-        <p>⭐ ${p.rating}</p>
-        <p>AI Recommended</p>
+  let savedItems = new Set();
+
+  function renderRecs(list) {
+    const grid = document.getElementById('recs-grid');
+    grid.innerHTML = list.map((r, i) => `
+      <div class="rec-card ${r.featured ? 'featured' : ''}" style="animation-delay:${i * 0.07}s">
+        <div class="card-visual" style="background:linear-gradient(135deg,${r.gradient})">
+          <div class="visual-inner">${r.emoji}</div>
+        </div>
+        <div class="card-content">
+          <div class="rec-meta">
+            <span class="rec-cat">${r.cat}</span>
+            <span class="match-badge">✦ ${r.match}% match</span>
+          </div>
+          <div class="rec-name">${r.name}</div>
+          <div class="rec-why">"${r.why}"</div>
+          <div class="rec-footer">
+            <div class="rec-price">$${r.price}</div>
+            <div class="rec-action">
+              <button class="btn-save ${savedItems.has(r.id) ? 'saved' : ''}" id="save-${r.id}" onclick="toggleSave(${r.id})">
+                ${savedItems.has(r.id) ? '❤️ Saved' : '🤍 Save'}
+              </button>
+              <button class="btn-buy" onclick="go('products.html')">Shop →</button>
+            </div>
+          </div>
+        </div>
       </div>
-    `;
-  });
-});
-</script>
+    `).join('');
+  }
 
+  function toggleSave(id) {
+    if (savedItems.has(id)) { savedItems.delete(id); }
+    else { savedItems.add(id); }
+    document.getElementById('saved-count').textContent = savedItems.size;
+    renderRecs(RECS);
+  }
+
+  function toggleTaste(el) { el.classList.toggle('active'); }
+
+  function refreshRecs() {
+    const btn = document.getElementById('refresh-btn');
+    btn.classList.add('spinning');
+    btn.disabled = true;
+    const overlay = document.getElementById('loading');
+    overlay.classList.remove('hidden');
+    overlay.style.opacity = '1';
+    setTimeout(() => {
+      const shuffled = [...RECS].sort(() => Math.random() - 0.5);
+      renderRecs(shuffled);
+      overlay.classList.add('hidden');
+      btn.classList.remove('spinning');
+      btn.disabled = false;
+    }, 1800);
+  }
+
+  function go(page) { window.location = page; }
+  function logout() { localStorage.clear(); window.location = 'index.html'; }
+
+  // Boot
+  const name = localStorage.getItem('name');
+  if (name) document.getElementById('banner-name').textContent = `${name}.`;
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hidden');
+    renderRecs(RECS);
+  }, 1800);
+</script>
 </body>
 </html>
