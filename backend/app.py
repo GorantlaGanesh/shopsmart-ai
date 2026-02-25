@@ -7,84 +7,93 @@ import os
 
 # ================= APP SETUP =================
 app = Flask(__name__)
+
+# Allow ALL origins — frontend HTML files are opened directly from disk
+# or any static host, so we can't restrict to a single origin
 CORS(app)
 
 # ================= MONGODB =================
 mongo_uri = os.environ.get("MONGO_URI")
-
 client = MongoClient(
     mongo_uri,
     serverSelectionTimeoutMS=5000,
     tls=True,
     tlsCAFile=certifi.where()
 )
-
-db = client["shopsmart"]
-products = db["products"]
-users = db["users"]
+db           = client["shopsmart"]
+products_col = db["products"]
+users_col    = db["users"]
 
 # ================= ROUTES =================
 
 @app.route("/")
 def home():
-    return {"status": "ShopSmart API running"}
+    return jsonify({"status": "ShopSmart API running ✓"})
 
 # ---------- SEED PRODUCTS ----------
 @app.route("/api/seed")
 def seed():
     data = [
-        {"id": 1, "name": "iPhone 14", "price": 69999, "rating": 4.6},
-        {"id": 2, "name": "Samsung S23", "price": 74999, "rating": 4.5},
-        {"id": 3, "name": "Sony Headphones", "price": 12999, "rating": 4.4}
+        {"id": 1, "name": "iPhone 14",         "price": 69999, "rating": 4.6, "category": "tech"},
+        {"id": 2, "name": "Samsung S23",        "price": 74999, "rating": 4.5, "category": "tech"},
+        {"id": 3, "name": "Sony Headphones",    "price": 12999, "rating": 4.4, "category": "tech"},
+        {"id": 4, "name": "Nike Air Max",       "price": 8999,  "rating": 4.3, "category": "fashion"},
+        {"id": 5, "name": "Levi's Jeans",       "price": 3499,  "rating": 4.2, "category": "fashion"},
+        {"id": 6, "name": "Vitamin C Serum",    "price": 799,   "rating": 4.5, "category": "beauty"},
+        {"id": 7, "name": "Scented Candle Set", "price": 1299,  "rating": 4.4, "category": "home"},
+        {"id": 8, "name": "Smart Desk Lamp",    "price": 2499,  "rating": 4.3, "category": "home"},
     ]
-    products.delete_many({})
-    products.insert_many(data)
-    return {"inserted": len(data)}
+    products_col.delete_many({})
+    products_col.insert_many(data)
+    return jsonify({"message": f"✓ Seeded {len(data)} products", "count": len(data)})
 
-# ---------- GET PRODUCTS ----------
+# ---------- GET ALL PRODUCTS ----------
 @app.route("/api/products")
 def get_products():
-    return jsonify(list(products.find({}, {"_id": 0})))
+    return jsonify(list(products_col.find({}, {"_id": 0})))
 
-# ---------- SIGNUP ----------
+# ---------- REGISTER ----------
 @app.route("/api/auth/register", methods=["POST"])
 def register():
-    data = request.json
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
+    data     = request.json or {}
+    name     = data.get("name",     "").strip()
+    email    = data.get("email",    "").strip().lower()
+    password = data.get("password", "")
 
     if not name or not email or not password:
-        return jsonify({"error": "Missing fields"}), 400
+        return jsonify({"error": "All fields are required"}), 400
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    if users_col.find_one({"email": email}):
+        return jsonify({"error": "An account with this email already exists"}), 400
 
-    if users.find_one({"email": email}):
-        return jsonify({"error": "User already exists"}), 400
-
-    users.insert_one({
-        "name": name,
-        "email": email,
+    users_col.insert_one({
+        "name":     name,
+        "email":    email,
         "password": generate_password_hash(password)
     })
-
-    return jsonify({"message": "User registered successfully"})
+    return jsonify({"message": "Account created successfully"})
 
 # ---------- LOGIN ----------
 @app.route("/api/auth/login", methods=["POST"])
 def login():
-    data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    data     = request.json or {}
+    email    = data.get("email",    "").strip().lower()
+    password = data.get("password", "")
 
-    user = users.find_one({"email": email})
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    user = users_col.find_one({"email": email})
     if not user or not check_password_hash(user["password"], password):
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({"error": "Invalid email or password"}), 401
 
-    # simple token (frontend demo)
     return jsonify({
         "access_token": "demo-token-123",
-        "name": user["name"]
+        "name":         user["name"],
+        "email":        user["email"]
     })
 
 # ================= START =================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
