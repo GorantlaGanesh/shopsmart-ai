@@ -223,27 +223,33 @@
   .card-img {
     width: 100%;
     height: 200px;
-    object-fit: cover;
     background: var(--cream);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3.5rem;
     position: relative;
     overflow: hidden;
   }
 
-  .card-img-bg {
+  .card-img img {
     width: 100%;
     height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+
+  .product-card:hover .card-img img { transform: scale(1.08); }
+
+  .card-img-fallback {
+    font-size: 4rem;
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
-    transition: transform 0.4s ease;
+    background: var(--cream);
   }
-
-  .product-card:hover .card-img-bg { transform: scale(1.12); }
 
   .wishlist-btn {
     position: absolute;
@@ -400,102 +406,125 @@
     <input class="search-input" type="text" placeholder="Search products..." id="search-input" oninput="filterProducts()">
   </div>
   <button class="filter-btn active" onclick="filterCat(this,'all')">All</button>
-  <button class="filter-btn" onclick="filterCat(this,'tech')">Tech</button>
+  <button class="filter-btn" onclick="filterCat(this,'electronics')">Electronics</button>
   <button class="filter-btn" onclick="filterCat(this,'fashion')">Fashion</button>
   <button class="filter-btn" onclick="filterCat(this,'home')">Home</button>
   <button class="filter-btn" onclick="filterCat(this,'beauty')">Beauty</button>
+  <button class="filter-btn" onclick="filterCat(this,'sports')">Sports</button>
 </div>
 
 <div class="products-grid" id="products-grid"></div>
 
 <script>
-  const API = "http://localhost:5000";
-
-  // Auth guard
-  if (!localStorage.getItem('token')) window.location = 'index.html';
+  const API = "https://shopsmart-ai.onrender.com";
 
   let ALL_PRODUCTS = [];
-  let cart = [];
-  let currentCat = 'all';
-
-  // ── CATEGORY MAP: map backend product names to frontend categories ──
-  function inferCat(name) {
-    const n = name.toLowerCase();
-    if (/iphone|samsung|sony|pixel|headphone|keyboard|laptop|watch|buds|earbud|speaker|phone|tablet|mac|airpod/.test(n)) return 'tech';
-    if (/shirt|dress|jacket|jeans|bag|wallet|shoe|sneaker|hoodie|blazer|tote|silk|linen|leather/.test(n)) return 'fashion';
-    if (/lamp|candle|sheet|pillow|chair|desk|sofa|mug|coffee|pour|ceramic|pan|knife/.test(n)) return 'home';
-    if (/serum|cream|mask|moistur|vitamin|retinol|sunscreen|lipstick|gua sha|perfume/.test(n)) return 'beauty';
-    return 'tech'; // default
-  }
-
-  function inferEmoji(name) {
-    const n = name.toLowerCase();
-    if (/iphone|phone/.test(n)) return '📱';
-    if (/samsung/.test(n)) return '📲';
-    if (/headphone|earbud|buds/.test(n)) return '🎧';
-    if (/laptop|mac/.test(n)) return '💻';
-    if (/keyboard/.test(n)) return '⌨️';
-    if (/watch/.test(n)) return '⌚';
-    if (/bag|tote/.test(n)) return '👜';
-    if (/wallet/.test(n)) return '👛';
-    if (/shoe|sneaker/.test(n)) return '👟';
-    if (/dress/.test(n)) return '👗';
-    if (/jacket|blazer|hoodie/.test(n)) return '🧥';
-    if (/lamp/.test(n)) return '💡';
-    if (/candle/.test(n)) return '🕯️';
-    if (/coffee|mug/.test(n)) return '☕';
-    if (/serum|cream/.test(n)) return '🧴';
-    if (/mask/.test(n)) return '🫧';
-    return '🛍️';
-  }
-
-  const GRADIENTS = [
-    '#e8eeff,#d0d8ff','#fdf0e0,#f8debb','#ebf5eb,#d4e8d4',
-    '#fef9e8,#fdf0c0','#fff5f5,#ffe0e0','#f0f8ff,#d8eeff',
-    '#fff0f8,#ffd8ef','#f5f5f5,#e8e8e8'
-  ];
+  let cart         = [];
+  let currentCat   = 'all';
+  let retryCount   = 0;
 
   async function loadProducts() {
     const grid = document.getElementById('products-grid');
-    grid.innerHTML = `<div class="empty"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block">✦</div><h3>Loading products…</h3></div>`;
+    grid.innerHTML = `<div class="empty">
+      <div class="empty-icon" style="display:inline-block;animation:spin 1.2s linear infinite">✦</div>
+      <h3>Loading products…</h3>
+      <p style="margin-top:8px;font-size:0.8rem;color:var(--muted)">Connecting to server…</p>
+    </div>`;
+
     try {
-      const res  = await fetch(`${API}/api/products`);
+      const res = await fetch(API + "/api/products", {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+
+      if (!res.ok) throw new Error("Server error " + res.status + ": " + res.statusText);
+
       const data = await res.json();
-      ALL_PRODUCTS = data.map((p, i) => ({
-        ...p,
-        cat: inferCat(p.name),
-        emoji: inferEmoji(p.name),
-        gradient: GRADIENTS[i % GRADIENTS.length],
-        badge: p.rating >= 4.6 ? 'hot' : p.rating >= 4.4 ? 'new' : null,
-        desc: `Rating: ${p.rating}★  ·  In stock`
+
+      if (!Array.isArray(data) || data.length === 0) {
+        grid.innerHTML = `<div class="empty">
+          <div class="empty-icon">📦</div>
+          <h3>No products yet</h3>
+          <p>Visit <a href="${API}/api/seed" target="_blank" style="color:var(--gold)">Seed Products</a> first, then refresh.</p>
+        </div>`;
+        return;
+      }
+
+      retryCount = 0;
+      ALL_PRODUCTS = data.map(p => ({
+        id:          p.product_id || p.id,
+        name:        p.name,
+        description: p.description || "",
+        image:       p.image_url   || p.image || "",
+        category:    p.category    || "Other",
+        cat:         (p.category   || "other").toLowerCase(),
+        price:       p.price       || null,
+        rating:      p.rating      || null,
       }));
+
       filterProducts();
+
     } catch (e) {
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>Could not load products</h3><p>Make sure Flask is running on port 5000.</p></div>`;
+      retryCount++;
+      if (retryCount <= 4) {
+        const wait = retryCount * 8;
+        let countdown = wait;
+        const interval = setInterval(() => {
+          countdown--;
+          grid.innerHTML = `<div class="empty">
+            <div class="empty-icon" style="display:inline-block;animation:spin 1.2s linear infinite">✦</div>
+            <h3>Server is waking up…</h3>
+            <p>Retrying in <strong>${countdown}s</strong> &nbsp;·&nbsp; attempt ${retryCount}/4</p>
+            <p style="margin-top:8px;font-size:0.75rem;color:var(--muted)">Render free tier sleeps when inactive</p>
+          </div>`;
+          if (countdown <= 0) { clearInterval(interval); loadProducts(); }
+        }, 1000);
+        return;
+      }
+      grid.innerHTML = `<div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <h3>Could not connect</h3>
+        <p style="color:#c0392b;font-size:0.82rem;margin:8px 0">${e.message}</p>
+        <p style="font-size:0.82rem">Check API: <a href="${API}/api/status" target="_blank" style="color:var(--gold)">${API}/api/status</a></p>
+        <button onclick="retryCount=0;loadProducts()" style="margin-top:16px;padding:10px 24px;background:var(--ink);color:var(--paper);border:none;border-radius:100px;cursor:pointer;font-size:0.9rem;font-family:inherit">↺ Try Again</button>
+      </div>`;
     }
   }
 
   function renderProducts(list) {
     const grid = document.getElementById('products-grid');
-    document.getElementById('results-count').textContent = `Showing ${list.length} product${list.length !== 1 ? 's' : ''}`;
+    document.getElementById('results-count').textContent =
+      `Showing ${list.length} product${list.length !== 1 ? 's' : ''}`;
+
     if (!list.length) {
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h3>No products found</h3><p>Try a different search or category.</p></div>`;
+      grid.innerHTML = `<div class="empty">
+        <div class="empty-icon">🔍</div>
+        <h3>No products found</h3>
+        <p>Try a different search or category.</p>
+      </div>`;
       return;
     }
+
     grid.innerHTML = list.map((p, i) => `
-      <div class="product-card" style="animation-delay:${i * 0.06}s">
-        <div class="card-img" style="background:linear-gradient(135deg,${p.gradient})">
-          <div class="card-img-bg">${p.emoji}</div>
-          ${p.badge ? `<span class="badge ${p.badge}">${p.badge}</span>` : ''}
-          <button class="wishlist-btn" id="w-${p.id}" onclick="toggleWish(${p.id},event)" title="Save">🤍</button>
+      <div class="product-card" style="animation-delay:${i * 0.04}s">
+        <div class="card-img">
+          <img
+            src="${p.image}"
+            alt="${p.name}"
+            loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          />
+          <div class="card-img-fallback" style="display:none">🛍️</div>
+          ${p.rating ? `<span class="badge ${p.rating >= 4.6 ? 'hot' : 'new'}">${p.rating}★</span>` : ''}
+          <button class="wishlist-btn" id="w-${p.id}" onclick="toggleWish(${p.id},event)">🤍</button>
         </div>
         <div class="card-body">
-          <div class="card-cat">${p.cat}</div>
+          <div class="card-cat">${p.category}</div>
           <div class="card-name">${p.name}</div>
-          <div class="card-desc">${p.desc}</div>
+          <div class="card-desc">${p.description}</div>
           <div class="card-footer">
             <div class="card-price">
-              ₹${p.price.toLocaleString('en-IN')}
+              ${p.price ? `₹${Number(p.price).toLocaleString('en-IN')}` : 'View price'}
             </div>
             <button class="add-btn" id="add-${p.id}" onclick="addToCart(${p.id})">Add to cart</button>
           </div>
@@ -506,8 +535,14 @@
 
   function filterProducts() {
     const q = document.getElementById('search-input').value.toLowerCase();
-    let list = ALL_PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
-    if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.cat.includes(q));
+    let list = ALL_PRODUCTS.filter(p =>
+      currentCat === 'all' || p.cat === currentCat
+    );
+    if (q) list = list.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+    );
     renderProducts(list);
   }
 
@@ -539,11 +574,13 @@
 
   function showCart() {
     const names = ALL_PRODUCTS.filter(p => cart.includes(p.id)).map(p => p.name);
-    alert(cart.length ? `🛍 Your cart (${cart.length}):\n\n${names.join('\n')}` : 'Your cart is empty!');
+    alert(cart.length
+      ? `🛍 Your cart (${cart.length}):\n\n${names.join('\n')}`
+      : 'Your cart is empty!');
   }
 
-  function go(page) { window.location = page; }
-  function logout() { localStorage.clear(); window.location = 'index.html'; }
+  function go(page)  { window.location = page; }
+  function logout()  { localStorage.clear(); window.location = 'index.html'; }
 
   loadProducts();
 </script>
