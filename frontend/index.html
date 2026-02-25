@@ -421,7 +421,7 @@
 </div>
 
 <script>
-  const API = "http://localhost:5000";
+  const API = "https://shopsmart-ai.onrender.com";
 
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach((b, i) => {
@@ -467,7 +467,7 @@
         window.location = 'home.html';
       }
     } catch (e) {
-      err.textContent = 'Cannot reach server. Is Flask running?';
+      err.textContent = `Error: ${e.message}`;
       err.style.display = 'block';
     }
     setLoading(btn, false, 'Sign In →');
@@ -513,7 +513,7 @@
         window.location = 'home.html';
       }
     } catch (e) {
-      err.textContent = 'Cannot reach server. Is Flask running?';
+      err.textContent = `Error: ${e.message}`;
       err.style.display = 'block';
     }
     setLoading(btn, false, 'Create Account →');
