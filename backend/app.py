@@ -2,7 +2,12 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
-import certifi, os, datetime
+import certifi, os, datetime, json
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
 
 try:
     import jwt
@@ -345,6 +350,229 @@ def seed():
     products_col.delete_many({})
     products_col.insert_many(PRODUCTS)
     return jsonify({"message": f"✓ Seeded {len(PRODUCTS)} products", "count": len(PRODUCTS)})
+
+
+# ================= AI AGENT =================
+@app.route("/api/agent", methods=["POST", "OPTIONS"])
+def agent():
+    if request.method == "OPTIONS": return jsonify({}), 200
+
+    if not ANTHROPIC_AVAILABLE:
+        return jsonify({"error": "anthropic package not installed"}), 500
+
+    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+    if not ANTHROPIC_API_KEY:
+        return jsonify({"error": "ANTHROPIC_API_KEY not set in environment"}), 500
+
+    data     = request.json or {}
+    messages = data.get("messages", [])  # full conversation history
+    if not messages:
+        return jsonify({"error": "No messages provided"}), 400
+
+    # Load all products from MongoDB to give agent full context
+    products = list(products_col.find({}, {"_id": 0}))
+    products_summary = json.dumps([{
+        "product_id": p.get("product_id"),
+        "name":       p.get("name"),
+        "category":   p.get("category"),
+        "description":p.get("description",""),
+        "price":      p.get("price"),
+        "rating":     p.get("rating", 0),
+        "review_count": p.get("review_count", 0)
+    } for p in products], indent=2)
+
+    # Define tools the agent can use
+    tools = [
+        {
+            "name": "search_products",
+            "description": "Search and filter products by name, category, price range, or rating. Use this to find products matching the user's needs.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "query":       {"type": "string",  "description": "Search keyword (name or description)"},
+                    "category":    {"type": "string",  "description": "Category: Electronics, Fashion, Home, Beauty, Sports"},
+                    "max_price":   {"type": "number",  "description": "Maximum price in INR"},
+                    "min_price":   {"type": "number",  "description": "Minimum price in INR"},
+                    "min_rating":  {"type": "number",  "description": "Minimum rating 0-5"},
+                    "limit":       {"type": "integer", "description": "Max results to return (default 5)"}
+                },
+                "required": []
+            }
+        },
+        {
+            "name": "get_product_details",
+            "description": "Get full details of a specific product by its ID including reviews.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "integer", "description": "The product ID"}
+                },
+                "required": ["product_id"]
+            }
+        },
+        {
+            "name": "compare_products",
+            "description": "Compare two or more products side by side on price, rating, features.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "product_ids": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "List of product IDs to compare"
+                    }
+                },
+                "required": ["product_ids"]
+            }
+        },
+        {
+            "name": "get_recommendations",
+            "description": "Get AI-powered similar product recommendations based on a product ID.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "integer", "description": "Seed product ID"},
+                    "n":          {"type": "integer", "description": "Number of recommendations (default 4)"}
+                },
+                "required": ["product_id"]
+            }
+        }
+    ]
+
+    def run_tool(name, inputs):
+        """Execute a tool call and return results."""
+        all_products = list(products_col.find({}, {"_id": 0}))
+
+        if name == "search_products":
+            results = all_products
+            if inputs.get("query"):
+                q = inputs["query"].lower()
+                results = [p for p in results if
+                    q in p.get("name","").lower() or
+                    q in p.get("description","").lower() or
+                    q in p.get("category","").lower()]
+            if inputs.get("category"):
+                results = [p for p in results if
+                    p.get("category","").lower() == inputs["category"].lower()]
+            if inputs.get("max_price"):
+                results = [p for p in results if (p.get("price") or 0) <= inputs["max_price"]]
+            if inputs.get("min_price"):
+                results = [p for p in results if (p.get("price") or 0) >= inputs["min_price"]]
+            if inputs.get("min_rating"):
+                results = [p for p in results if (p.get("rating") or 0) >= inputs["min_rating"]]
+            limit = inputs.get("limit", 5)
+            return results[:limit]
+
+        elif name == "get_product_details":
+            pid     = inputs["product_id"]
+            product = products_col.find_one({"product_id": pid}, {"_id": 0})
+            if product:
+                reviews = list(reviews_col.find({"product_id": pid}, {"_id": 0}))
+                product["reviews"] = reviews
+            return product or {"error": "Product not found"}
+
+        elif name == "compare_products":
+            pids    = inputs["product_ids"]
+            results = []
+            for pid in pids:
+                p = products_col.find_one({"product_id": pid}, {"_id": 0})
+                if p: results.append(p)
+            return results
+
+        elif name == "get_recommendations":
+            pid = inputs["product_id"]
+            try:
+                from recommender import Recommender
+                csv_path = os.path.join(os.path.dirname(__file__), "data", "products.csv")
+                rec  = Recommender(csv_path)
+                recs = rec.recommend_by_id(pid, n=inputs.get("n", 4))
+                # Enrich with prices
+                for r in recs:
+                    mongo_p = products_col.find_one({"product_id": r.get("product_id")}, {"_id": 0})
+                    if mongo_p:
+                        r["price"]     = mongo_p.get("price")
+                        r["image_url"] = mongo_p.get("image_url","")
+                return recs
+            except:
+                # Fallback
+                product = products_col.find_one({"product_id": pid}, {"_id": 0})
+                if not product: return []
+                return list(products_col.find(
+                    {"category": product["category"], "product_id": {"$ne": pid}},
+                    {"_id": 0}).limit(4))
+        return {"error": "Unknown tool"}
+
+    # System prompt
+    system = f"""You are ShopSmart AI — an intelligent shopping assistant for an Indian e-commerce platform.
+
+You have access to a catalogue of {len(products)} products across Electronics, Fashion, Home, Beauty, and Sports.
+
+Your capabilities:
+- Search and filter products by name, category, price, rating
+- Compare products side by side
+- Give personalised recommendations
+- Answer questions about products
+- Help users find the best value for their budget
+- Suggest complete setups (e.g. "home gym under ₹20,000")
+
+All prices are in Indian Rupees (₹). Be conversational, helpful and concise.
+When you find products, always mention their name, price (₹), and why they match.
+Use the tools available to search and fetch real product data before answering.
+Never make up product details — always use the tools.
+
+Current product catalogue has {len(products)} items. Use search_products tool to find them."""
+
+    # Run agentic loop
+    client_ai = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    agent_messages = list(messages)  # copy conversation history
+
+    MAX_ITERATIONS = 5
+    for _ in range(MAX_ITERATIONS):
+        response = client_ai.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=2048,
+            system=system,
+            tools=tools,
+            messages=agent_messages
+        )
+
+        # Check if done
+        if response.stop_reason == "end_turn":
+            # Extract text response
+            text = " ".join(b.text for b in response.content if hasattr(b, "text"))
+            # Extract any product results from tool use for frontend cards
+            return jsonify({"reply": text, "stop_reason": "end_turn"})
+
+        # Process tool calls
+        if response.stop_reason == "tool_use":
+            # Add assistant message with tool calls
+            agent_messages.append({"role": "assistant", "content": response.content})
+
+            # Execute each tool call
+            tool_results = []
+            product_results = []  # collect for frontend cards
+
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = run_tool(block.name, block.input)
+                    tool_results.append({
+                        "type":        "tool_result",
+                        "tool_use_id": block.id,
+                        "content":     json.dumps(result)
+                    })
+                    # Save product results for frontend
+                    if isinstance(result, list):
+                        product_results.extend(result)
+                    elif isinstance(result, dict) and result.get("product_id"):
+                        product_results.append(result)
+
+            agent_messages.append({"role": "user", "content": tool_results})
+        else:
+            break
+
+    # Final response after tool loop
+    text = " ".join(b.text for b in response.content if hasattr(b, "text"))
+    return jsonify({"reply": text, "products": product_results[:6]})
 
 # ================= START =================
 if __name__ == "__main__":

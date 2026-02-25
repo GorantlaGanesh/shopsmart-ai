@@ -435,6 +435,7 @@
   <div class="nav-links">
     <button class="nav-btn ghost" onclick="go('products.html')">Products</button>
     <button class="nav-btn primary" onclick="go('recs.html')">AI Picks</button>
+    <button class="nav-btn primary" onclick="go('agent.html')">🤖 AI Agent</button>
     <button class="nav-btn danger" onclick="logout()">Sign out</button>
   </div>
 </nav>
@@ -522,7 +523,7 @@
 <footer>© 2025 ShopSmart AI — designed for discerning shoppers</footer>
 
 <script>
-  const API = "http://localhost:5000";
+  const API = "https://shopsmart-ai.onrender.com";
 
   // Auth guard
   if (!localStorage.getItem('token')) window.location = 'index.html';
