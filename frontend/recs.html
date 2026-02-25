@@ -564,7 +564,7 @@
     }
 
     grid.innerHTML = list.map((r, i) => `
-      <div class="rec-card ${i === 0 ? 'featured' : ''}" style="animation-delay:${i * 0.07}s">
+      <div class="rec-card ${i === 0 ? 'featured' : ''}" style="animation-delay:${i * 0.07}s;cursor:pointer" onclick="go('product.html?id='+r.id)">
         <div class="card-visual">
           <img
             src="${r.image}"
@@ -597,21 +597,30 @@
 
   async function loadRecs() {
     try {
-      const res  = await fetch(`${API}/api/products`);
-      const data = await res.json();
+      // Use recommender API — pick a popular product id as seed (e.g. top rated)
+      // First get all products to find a good seed
+      const allRes  = await fetch(`${API}/api/products`);
+      const allData = await allRes.json();
+      const sorted  = [...allData].sort((a,b)=>(b.rating||0)-(a.rating||0));
+      const seedId  = sorted[0]?.product_id || 1;
 
-      // Sort by rating desc, top 12 shown as "recommendations"
-      ALL_RECS = [...data]
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 12)
-        .map((p, i) => ({
+      // Get AI recommendations based on top product
+      const recRes  = await fetch(`${API}/api/recommend/${seedId}`);
+      const recData = await recRes.json();
+
+      // Merge: recs first, then fill with top-rated
+      const recIds = new Set(recData.map(p => p.product_id));
+      const fillData = sorted.filter(p => !recIds.has(p.product_id));
+      const merged = [...recData, ...fillData].slice(0, 12);
+
+      ALL_RECS = merged.map((p, i) => ({
           id:       p.product_id,
           name:     p.name,
           category: p.category,
-          image:    p.image_url,
+          image:    p.image_url || p.image,
           price:    p.price || null,
           rating:   p.rating || null,
-          match:    Math.min(99, Math.max(85, 99 - i * 2)),
+          match:    Math.min(99, Math.max(82, 99 - i * 2)),
           why:      WHY_PHRASES[i % WHY_PHRASES.length]
         }));
 

@@ -423,6 +423,15 @@
   let currentCat   = 'all';
   let retryCount   = 0;
 
+  function goProduct(id) { window.location = 'product.html?id=' + id; }
+
+  // Sync cart count from localStorage
+  function syncCart() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const total = cart.reduce((s,i) => s + i.qty, 0);
+    document.getElementById('cart-count').textContent = total;
+  }
+
   async function loadProducts() {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = `<div class="empty">
@@ -506,7 +515,7 @@
     }
 
     grid.innerHTML = list.map((p, i) => `
-      <div class="product-card" style="animation-delay:${i * 0.04}s">
+      <div class="product-card" style="animation-delay:${i * 0.04}s;cursor:pointer" onclick="goProduct(${p.id})">
         <div class="card-img">
           <img
             src="${p.image}"
@@ -573,16 +582,18 @@
   }
 
   function showCart() {
-    const names = ALL_PRODUCTS.filter(p => cart.includes(p.id)).map(p => p.name);
-    alert(cart.length
-      ? `🛍 Your cart (${cart.length}):\n\n${names.join('\n')}`
-      : 'Your cart is empty!');
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (!cart.length) { alert('Your cart is empty!'); return; }
+    const lines = cart.map(i => i.name + ' x' + i.qty + '  ₹' + Number((i.price||0)*i.qty).toLocaleString('en-IN'));
+    const total = cart.reduce((s,i) => s+(i.price||0)*i.qty, 0);
+    alert('🛍 Cart:\n\n' + lines.join('\n') + '\n\nTotal: ₹' + total.toLocaleString('en-IN'));
   }
 
   function go(page)  { window.location = page; }
   function logout()  { localStorage.clear(); window.location = 'index.html'; }
 
   loadProducts();
+  syncCart();
 </script>
 </body>
 </html>
