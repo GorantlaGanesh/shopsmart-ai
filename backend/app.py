@@ -81,12 +81,11 @@ def recalc_rating(pid):
 @app.route("/")
 @app.route("/api/status")
 def status():
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    key = os.environ.get("GEMINI_API_KEY")
     return jsonify({
         "status": "ShopSmart API running ✓",
-        "anthropic_key_set": bool(key),
-        "anthropic_key_preview": (key[:12] + "...") if key else None,
-        "anthropic_available": ANTHROPIC_AVAILABLE
+        "gemini_key_set": bool(key),
+        "gemini_available": GEMINI_AVAILABLE
     })
 
 # ================= PRODUCTS =================
@@ -416,7 +415,7 @@ def agent():
     # Build conversation for Gemini
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         system_instruction=f"""You are ShopSmart AI — an intelligent shopping assistant for an Indian e-commerce platform.
 
 You have access to {len(products)} products. Here is the full catalogue:
