@@ -409,23 +409,71 @@
 <div class="products-grid" id="products-grid"></div>
 
 <script>
-  const PRODUCTS = [
-    { id:1, name:"Wireless Pro Earbuds", cat:"tech", desc:"Active noise cancellation, 30hr battery.", price:129, badge:"new", emoji:"🎧", gradient:"#e8f4fd,#d6eaf8" },
-    { id:2, name:"Leather Tote Bag", cat:"fashion", desc:"Full-grain Italian leather, fits 15\" laptop.", price:219, oldPrice:279, badge:"sale", emoji:"👜", gradient:"#fdf3e8,#f9e4c8" },
-    { id:3, name:"Smart Desk Lamp", cat:"home", desc:"Adaptive brightness, wireless charging pad.", price:89, badge:null, emoji:"💡", gradient:"#fefde8,#fdf8c8" },
-    { id:4, name:"Vitamin C Serum", cat:"beauty", desc:"20% ascorbic acid, visibly brightens in 2 weeks.", price:58, badge:"hot", emoji:"🧴", gradient:"#fff8e8,#fde8b0" },
-    { id:5, name:"Mechanical Keyboard", cat:"tech", desc:"Tactile switches, aluminum frame, RGB.", price:175, badge:null, emoji:"⌨️", gradient:"#eef2ff,#dde6ff" },
-    { id:6, name:"Linen Blazer", cat:"fashion", desc:"Relaxed fit, sustainable linen, summer-ready.", price:145, badge:"new", emoji:"🧥", gradient:"#f0f4ec,#dde8d4" },
-    { id:7, name:"Ceramic Pour-Over Set", cat:"home", desc:"Hand-thrown ceramic, for the coffee connoisseur.", price:68, badge:null, emoji:"☕", gradient:"#f5ede8,#ead8d0" },
-    { id:8, name:"Hydrating Face Mask", cat:"beauty", desc:"Hyaluronic acid + ceramide, 10-min treatment.", price:38, badge:"sale", emoji:"🫧", gradient:"#f0f8ff,#d8eeff" },
-    { id:9, name:"Ultra-Slim Laptop Stand", cat:"tech", desc:"Adjustable height, foldable, universal fit.", price:49, badge:null, emoji:"💻", gradient:"#f4f4f4,#e8e8e8" },
-    { id:10, name:"Silk Midi Dress", cat:"fashion", desc:"100% mulberry silk, effortlessly elegant.", price:310, oldPrice:420, badge:"sale", emoji:"👗", gradient:"#fff0f5,#ffe0ea" },
-    { id:11, name:"Scented Candle Set", cat:"home", desc:"3 seasonal scents, 50hr burn time each.", price:72, badge:null, emoji:"🕯️", gradient:"#fdf5e8,#f9e8c0" },
-    { id:12, name:"Gua Sha Tool", cat:"beauty", desc:"Rose quartz, sculpts and de-puffs skin.", price:29, badge:"hot", emoji:"💎", gradient:"#fdf0f8,#f8d8ef" },
-  ];
+  const API = "http://localhost:5000";
 
+  // Auth guard
+  if (!localStorage.getItem('token')) window.location = 'index.html';
+
+  let ALL_PRODUCTS = [];
   let cart = [];
   let currentCat = 'all';
+
+  // ── CATEGORY MAP: map backend product names to frontend categories ──
+  function inferCat(name) {
+    const n = name.toLowerCase();
+    if (/iphone|samsung|sony|pixel|headphone|keyboard|laptop|watch|buds|earbud|speaker|phone|tablet|mac|airpod/.test(n)) return 'tech';
+    if (/shirt|dress|jacket|jeans|bag|wallet|shoe|sneaker|hoodie|blazer|tote|silk|linen|leather/.test(n)) return 'fashion';
+    if (/lamp|candle|sheet|pillow|chair|desk|sofa|mug|coffee|pour|ceramic|pan|knife/.test(n)) return 'home';
+    if (/serum|cream|mask|moistur|vitamin|retinol|sunscreen|lipstick|gua sha|perfume/.test(n)) return 'beauty';
+    return 'tech'; // default
+  }
+
+  function inferEmoji(name) {
+    const n = name.toLowerCase();
+    if (/iphone|phone/.test(n)) return '📱';
+    if (/samsung/.test(n)) return '📲';
+    if (/headphone|earbud|buds/.test(n)) return '🎧';
+    if (/laptop|mac/.test(n)) return '💻';
+    if (/keyboard/.test(n)) return '⌨️';
+    if (/watch/.test(n)) return '⌚';
+    if (/bag|tote/.test(n)) return '👜';
+    if (/wallet/.test(n)) return '👛';
+    if (/shoe|sneaker/.test(n)) return '👟';
+    if (/dress/.test(n)) return '👗';
+    if (/jacket|blazer|hoodie/.test(n)) return '🧥';
+    if (/lamp/.test(n)) return '💡';
+    if (/candle/.test(n)) return '🕯️';
+    if (/coffee|mug/.test(n)) return '☕';
+    if (/serum|cream/.test(n)) return '🧴';
+    if (/mask/.test(n)) return '🫧';
+    return '🛍️';
+  }
+
+  const GRADIENTS = [
+    '#e8eeff,#d0d8ff','#fdf0e0,#f8debb','#ebf5eb,#d4e8d4',
+    '#fef9e8,#fdf0c0','#fff5f5,#ffe0e0','#f0f8ff,#d8eeff',
+    '#fff0f8,#ffd8ef','#f5f5f5,#e8e8e8'
+  ];
+
+  async function loadProducts() {
+    const grid = document.getElementById('products-grid');
+    grid.innerHTML = `<div class="empty"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block">✦</div><h3>Loading products…</h3></div>`;
+    try {
+      const res  = await fetch(`${API}/api/products`);
+      const data = await res.json();
+      ALL_PRODUCTS = data.map((p, i) => ({
+        ...p,
+        cat: inferCat(p.name),
+        emoji: inferEmoji(p.name),
+        gradient: GRADIENTS[i % GRADIENTS.length],
+        badge: p.rating >= 4.6 ? 'hot' : p.rating >= 4.4 ? 'new' : null,
+        desc: `Rating: ${p.rating}★  ·  In stock`
+      }));
+      filterProducts();
+    } catch (e) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>Could not load products</h3><p>Make sure Flask is running on port 5000.</p></div>`;
+    }
+  }
 
   function renderProducts(list) {
     const grid = document.getElementById('products-grid');
@@ -447,8 +495,7 @@
           <div class="card-desc">${p.desc}</div>
           <div class="card-footer">
             <div class="card-price">
-              ${p.oldPrice ? `<span class="old">$${p.oldPrice}</span>` : ''}
-              $${p.price}
+              ₹${p.price.toLocaleString('en-IN')}
             </div>
             <button class="add-btn" id="add-${p.id}" onclick="addToCart(${p.id})">Add to cart</button>
           </div>
@@ -459,8 +506,8 @@
 
   function filterProducts() {
     const q = document.getElementById('search-input').value.toLowerCase();
-    let list = PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
-    if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.cat.includes(q));
+    let list = ALL_PRODUCTS.filter(p => currentCat === 'all' || p.cat === currentCat);
+    if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.cat.includes(q));
     renderProducts(list);
   }
 
@@ -491,14 +538,14 @@
   }
 
   function showCart() {
-    const names = PRODUCTS.filter(p => cart.includes(p.id)).map(p => p.name);
+    const names = ALL_PRODUCTS.filter(p => cart.includes(p.id)).map(p => p.name);
     alert(cart.length ? `🛍 Your cart (${cart.length}):\n\n${names.join('\n')}` : 'Your cart is empty!');
   }
 
   function go(page) { window.location = page; }
   function logout() { localStorage.clear(); window.location = 'index.html'; }
 
-  renderProducts(PRODUCTS);
+  loadProducts();
 </script>
 </body>
 </html>
