@@ -24,4 +24,4 @@ Werkzeug==3.1.5
 zipp==3.23.0
 pymongo
 certifi
-anthropic
+google-generativeai

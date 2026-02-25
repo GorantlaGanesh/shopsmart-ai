@@ -4,10 +4,10 @@ from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 import certifi, os, datetime, json
 try:
-    import anthropic
-    ANTHROPIC_AVAILABLE = True
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
 except ImportError:
-    ANTHROPIC_AVAILABLE = False
+    GEMINI_AVAILABLE = False
 
 try:
     import jwt
@@ -81,7 +81,13 @@ def recalc_rating(pid):
 @app.route("/")
 @app.route("/api/status")
 def status():
-    return jsonify({"status": "ShopSmart API running ✓"})
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    return jsonify({
+        "status": "ShopSmart API running ✓",
+        "anthropic_key_set": bool(key),
+        "anthropic_key_preview": (key[:12] + "...") if key else None,
+        "anthropic_available": ANTHROPIC_AVAILABLE
+    })
 
 # ================= PRODUCTS =================
 @app.route("/api/products")
@@ -357,222 +363,106 @@ def seed():
 def agent():
     if request.method == "OPTIONS": return jsonify({}), 200
 
-    if not ANTHROPIC_AVAILABLE:
-        return jsonify({"error": "anthropic package not installed"}), 500
+    if not GEMINI_AVAILABLE:
+        return jsonify({"error": "google-generativeai package not installed"}), 500
 
-    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-    if not ANTHROPIC_API_KEY:
-        return jsonify({"error": "ANTHROPIC_API_KEY not set in environment"}), 500
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    if not GEMINI_API_KEY:
+        return jsonify({"error": "GEMINI_API_KEY not set in environment"}), 500
 
     data     = request.json or {}
-    messages = data.get("messages", [])  # full conversation history
+    messages = data.get("messages", [])
     if not messages:
         return jsonify({"error": "No messages provided"}), 400
 
-    # Load all products from MongoDB to give agent full context
+    # Load all products from MongoDB
     products = list(products_col.find({}, {"_id": 0}))
-    products_summary = json.dumps([{
-        "product_id": p.get("product_id"),
-        "name":       p.get("name"),
-        "category":   p.get("category"),
-        "description":p.get("description",""),
-        "price":      p.get("price"),
-        "rating":     p.get("rating", 0),
-        "review_count": p.get("review_count", 0)
-    } for p in products], indent=2)
 
-    # Define tools the agent can use
-    tools = [
-        {
-            "name": "search_products",
-            "description": "Search and filter products by name, category, price range, or rating. Use this to find products matching the user's needs.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "query":       {"type": "string",  "description": "Search keyword (name or description)"},
-                    "category":    {"type": "string",  "description": "Category: Electronics, Fashion, Home, Beauty, Sports"},
-                    "max_price":   {"type": "number",  "description": "Maximum price in INR"},
-                    "min_price":   {"type": "number",  "description": "Minimum price in INR"},
-                    "min_rating":  {"type": "number",  "description": "Minimum rating 0-5"},
-                    "limit":       {"type": "integer", "description": "Max results to return (default 5)"}
-                },
-                "required": []
-            }
-        },
-        {
-            "name": "get_product_details",
-            "description": "Get full details of a specific product by its ID including reviews.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "product_id": {"type": "integer", "description": "The product ID"}
-                },
-                "required": ["product_id"]
-            }
-        },
-        {
-            "name": "compare_products",
-            "description": "Compare two or more products side by side on price, rating, features.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "product_ids": {
-                        "type": "array",
-                        "items": {"type": "integer"},
-                        "description": "List of product IDs to compare"
-                    }
-                },
-                "required": ["product_ids"]
-            }
-        },
-        {
-            "name": "get_recommendations",
-            "description": "Get AI-powered similar product recommendations based on a product ID.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "product_id": {"type": "integer", "description": "Seed product ID"},
-                    "n":          {"type": "integer", "description": "Number of recommendations (default 4)"}
-                },
-                "required": ["product_id"]
-            }
-        }
-    ]
+    def search_products(query="", category="", max_price=None, min_price=None, min_rating=None, limit=5):
+        results = products
+        if query:
+            q = query.lower()
+            results = [p for p in results if
+                q in p.get("name","").lower() or
+                q in p.get("description","").lower() or
+                q in p.get("category","").lower()]
+        if category:
+            results = [p for p in results if
+                p.get("category","").lower() == category.lower()]
+        if max_price:
+            results = [p for p in results if (p.get("price") or 0) <= max_price]
+        if min_price:
+            results = [p for p in results if (p.get("price") or 0) >= min_price]
+        if min_rating:
+            results = [p for p in results if (p.get("rating") or 0) >= min_rating]
+        return results[:limit]
 
-    def run_tool(name, inputs):
-        """Execute a tool call and return results."""
-        all_products = list(products_col.find({}, {"_id": 0}))
+    def compare_products(product_ids):
+        return [p for p in products if p.get("product_id") in product_ids]
 
-        if name == "search_products":
-            results = all_products
-            if inputs.get("query"):
-                q = inputs["query"].lower()
-                results = [p for p in results if
-                    q in p.get("name","").lower() or
-                    q in p.get("description","").lower() or
-                    q in p.get("category","").lower()]
-            if inputs.get("category"):
-                results = [p for p in results if
-                    p.get("category","").lower() == inputs["category"].lower()]
-            if inputs.get("max_price"):
-                results = [p for p in results if (p.get("price") or 0) <= inputs["max_price"]]
-            if inputs.get("min_price"):
-                results = [p for p in results if (p.get("price") or 0) >= inputs["min_price"]]
-            if inputs.get("min_rating"):
-                results = [p for p in results if (p.get("rating") or 0) >= inputs["min_rating"]]
-            limit = inputs.get("limit", 5)
-            return results[:limit]
+    def get_product_details(product_id):
+        p = next((p for p in products if p.get("product_id") == product_id), None)
+        if p:
+            reviews = list(reviews_col.find({"product_id": product_id}, {"_id": 0}))
+            p["reviews"] = reviews
+        return p or {"error": "Not found"}
 
-        elif name == "get_product_details":
-            pid     = inputs["product_id"]
-            product = products_col.find_one({"product_id": pid}, {"_id": 0})
-            if product:
-                reviews = list(reviews_col.find({"product_id": pid}, {"_id": 0}))
-                product["reviews"] = reviews
-            return product or {"error": "Product not found"}
+    # Build full context for Gemini
+    products_text = "\n".join([
+        f"ID:{p.get('product_id')} | {p.get('name')} | {p.get('category')} | ₹{p.get('price',0):,} | Rating:{p.get('rating',0)} | {p.get('description','')}"
+        for p in products
+    ])
 
-        elif name == "compare_products":
-            pids    = inputs["product_ids"]
-            results = []
-            for pid in pids:
-                p = products_col.find_one({"product_id": pid}, {"_id": 0})
-                if p: results.append(p)
-            return results
+    # Build conversation for Gemini
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        system_instruction=f"""You are ShopSmart AI — an intelligent shopping assistant for an Indian e-commerce platform.
 
-        elif name == "get_recommendations":
-            pid = inputs["product_id"]
-            try:
-                from recommender import Recommender
-                csv_path = os.path.join(os.path.dirname(__file__), "data", "products.csv")
-                rec  = Recommender(csv_path)
-                recs = rec.recommend_by_id(pid, n=inputs.get("n", 4))
-                # Enrich with prices
-                for r in recs:
-                    mongo_p = products_col.find_one({"product_id": r.get("product_id")}, {"_id": 0})
-                    if mongo_p:
-                        r["price"]     = mongo_p.get("price")
-                        r["image_url"] = mongo_p.get("image_url","")
-                return recs
-            except:
-                # Fallback
-                product = products_col.find_one({"product_id": pid}, {"_id": 0})
-                if not product: return []
-                return list(products_col.find(
-                    {"category": product["category"], "product_id": {"$ne": pid}},
-                    {"_id": 0}).limit(4))
-        return {"error": "Unknown tool"}
+You have access to {len(products)} products. Here is the full catalogue:
 
-    # System prompt
-    system = f"""You are ShopSmart AI — an intelligent shopping assistant for an Indian e-commerce platform.
+{products_text}
 
-You have access to a catalogue of {len(products)} products across Electronics, Fashion, Home, Beauty, and Sports.
+Your job:
+- Search and recommend products based on user needs
+- Compare products on price, rating, features
+- Suggest complete setups within a budget (e.g. home gym under ₹20,000)
+- Answer questions about any product
+- Always mention product name, price (₹), and why it matches
 
-Your capabilities:
-- Search and filter products by name, category, price, rating
-- Compare products side by side
-- Give personalised recommendations
-- Answer questions about products
-- Help users find the best value for their budget
-- Suggest complete setups (e.g. "home gym under ₹20,000")
+Rules:
+- Only recommend products from the catalogue above
+- Always include product IDs in your response like [ID:5] so frontend can show cards
+- Be conversational, helpful and concise
+- All prices are in Indian Rupees (₹)"""
+    )
 
-All prices are in Indian Rupees (₹). Be conversational, helpful and concise.
-When you find products, always mention their name, price (₹), and why they match.
-Use the tools available to search and fetch real product data before answering.
-Never make up product details — always use the tools.
+    # Convert history to Gemini format
+    gemini_history = []
+    for msg in messages[:-1]:  # all except last
+        role = "user" if msg["role"] == "user" else "model"
+        gemini_history.append({"role": role, "parts": [msg["content"]]})
 
-Current product catalogue has {len(products)} items. Use search_products tool to find them."""
+    chat    = model.start_chat(history=gemini_history)
+    user_msg = messages[-1]["content"]
 
-    # Run agentic loop
-    client_ai = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    agent_messages = list(messages)  # copy conversation history
+    try:
+        response = chat.send_message(user_msg)
+        reply    = response.text
 
-    MAX_ITERATIONS = 5
-    for _ in range(MAX_ITERATIONS):
-        response = client_ai.messages.create(
-            model="claude-opus-4-5",
-            max_tokens=2048,
-            system=system,
-            tools=tools,
-            messages=agent_messages
-        )
+        # Extract product IDs mentioned in response like [ID:5]
+        import re
+        mentioned_ids = [int(x) for x in re.findall(r'\[ID:(\d+)\]', reply)]
+        # Also extract plain product_id numbers from context
+        product_results = [p for p in products if p.get("product_id") in mentioned_ids]
 
-        # Check if done
-        if response.stop_reason == "end_turn":
-            # Extract text response
-            text = " ".join(b.text for b in response.content if hasattr(b, "text"))
-            # Extract any product results from tool use for frontend cards
-            return jsonify({"reply": text, "stop_reason": "end_turn"})
+        # Clean up [ID:x] tags from display text
+        clean_reply = re.sub(r'\s*\[ID:\d+\]', '', reply)
 
-        # Process tool calls
-        if response.stop_reason == "tool_use":
-            # Add assistant message with tool calls
-            agent_messages.append({"role": "assistant", "content": response.content})
+        return jsonify({"reply": clean_reply, "products": product_results[:6]})
 
-            # Execute each tool call
-            tool_results = []
-            product_results = []  # collect for frontend cards
-
-            for block in response.content:
-                if block.type == "tool_use":
-                    result = run_tool(block.name, block.input)
-                    tool_results.append({
-                        "type":        "tool_result",
-                        "tool_use_id": block.id,
-                        "content":     json.dumps(result)
-                    })
-                    # Save product results for frontend
-                    if isinstance(result, list):
-                        product_results.extend(result)
-                    elif isinstance(result, dict) and result.get("product_id"):
-                        product_results.append(result)
-
-            agent_messages.append({"role": "user", "content": tool_results})
-        else:
-            break
-
-    # Final response after tool loop
-    text = " ".join(b.text for b in response.content if hasattr(b, "text"))
-    return jsonify({"reply": text, "products": product_results[:6]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ================= START =================
 if __name__ == "__main__":
