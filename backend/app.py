@@ -8,9 +8,22 @@ import os
 # ================= APP SETUP =================
 app = Flask(__name__)
 
-# Allow ALL origins — frontend HTML files are opened directly from disk
-# or any static host, so we can't restrict to a single origin
-CORS(app)
+# Explicitly allow all origins + methods + headers
+# Fixes CORS preflight (OPTIONS) failures with POST requests
+CORS(app,
+     origins="*",
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     supports_credentials=False
+)
+
+# Belt-and-suspenders: manually add CORS headers to every response
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"]  = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
 
 # ================= MONGODB =================
 mongo_uri = os.environ.get("MONGO_URI")
@@ -28,6 +41,10 @@ users_col    = db["users"]
 
 @app.route("/")
 def home():
+    return jsonify({"status": "ShopSmart API running ✓"})
+
+@app.route("/api/status")
+def status():
     return jsonify({"status": "ShopSmart API running ✓"})
 
 # ---------- SEED PRODUCTS ----------
@@ -53,8 +70,10 @@ def get_products():
     return jsonify(list(products_col.find({}, {"_id": 0})))
 
 # ---------- REGISTER ----------
-@app.route("/api/auth/register", methods=["POST"])
+@app.route("/api/auth/register", methods=["GET", "POST", "OPTIONS"])
 def register():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
     data     = request.json or {}
     name     = data.get("name",     "").strip()
     email    = data.get("email",    "").strip().lower()
@@ -75,8 +94,10 @@ def register():
     return jsonify({"message": "Account created successfully"})
 
 # ---------- LOGIN ----------
-@app.route("/api/auth/login", methods=["POST"])
+@app.route("/api/auth/login", methods=["GET", "POST", "OPTIONS"])
 def login():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
     data     = request.json or {}
     email    = data.get("email",    "").strip().lower()
     password = data.get("password", "")
