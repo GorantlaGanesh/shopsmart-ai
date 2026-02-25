@@ -421,6 +421,8 @@
 </div>
 
 <script>
+  const API = "http://localhost:5000";
+
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach((b, i) => {
       b.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
@@ -429,29 +431,92 @@
     document.getElementById('signup-panel').classList.toggle('active', tab === 'signup');
   }
 
-  function handleLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    const err = document.getElementById('login-error');
-    if (!email || !pass) { err.style.display = 'block'; return; }
-    err.style.display = 'none';
-    // Save mock session
-    const name = email.split('@')[0];
-    localStorage.setItem('name', name.charAt(0).toUpperCase() + name.slice(1));
-    localStorage.setItem('email', email);
-    window.location = 'home.html';
+  function setLoading(btnEl, loading, label) {
+    btnEl.disabled = loading;
+    btnEl.querySelector('span').textContent = loading ? 'Please wait…' : label;
+    btnEl.style.opacity = loading ? '0.7' : '1';
   }
 
-  function handleSignup() {
+  async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    const err   = document.getElementById('login-error');
+    const btn   = document.querySelector('#login-panel .submit-btn');
+    err.style.display = 'none';
+
+    if (!email || !pass) {
+      err.textContent = 'Please fill in all fields.';
+      err.style.display = 'block'; return;
+    }
+
+    setLoading(btn, true, 'Sign In →');
+    try {
+      const res  = await fetch(`${API}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        err.textContent = data.error || 'Invalid credentials.';
+        err.style.display = 'block';
+      } else {
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('name',  data.name);
+        localStorage.setItem('email', email);
+        window.location = 'home.html';
+      }
+    } catch (e) {
+      err.textContent = 'Cannot reach server. Is Flask running?';
+      err.style.display = 'block';
+    }
+    setLoading(btn, false, 'Sign In →');
+  }
+
+  async function handleSignup() {
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
-    const pass = document.getElementById('signup-pass').value;
-    const err = document.getElementById('signup-error');
-    if (!name || !email || !pass || pass.length < 6) { err.style.display = 'block'; return; }
+    const pass  = document.getElementById('signup-pass').value;
+    const err   = document.getElementById('signup-error');
+    const btn   = document.querySelector('#signup-panel .submit-btn');
     err.style.display = 'none';
-    localStorage.setItem('name', name.split(' ')[0]);
-    localStorage.setItem('email', email);
-    window.location = 'home.html';
+
+    if (!name || !email || !pass || pass.length < 6) {
+      err.textContent = !pass || pass.length < 6
+        ? 'Password must be at least 6 characters.'
+        : 'Please fill in all fields.';
+      err.style.display = 'block'; return;
+    }
+
+    setLoading(btn, true, 'Create Account →');
+    try {
+      const res  = await fetch(`${API}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        err.textContent = data.error || 'Registration failed.';
+        err.style.display = 'block';
+      } else {
+        // Auto-login after signup
+        const loginRes  = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const loginData = await loginRes.json();
+        localStorage.setItem('token', loginData.access_token);
+        localStorage.setItem('name',  loginData.name);
+        localStorage.setItem('email', email);
+        window.location = 'home.html';
+      }
+    } catch (e) {
+      err.textContent = 'Cannot reach server. Is Flask running?';
+      err.style.display = 'block';
+    }
+    setLoading(btn, false, 'Create Account →');
   }
 
   // Enter key support
