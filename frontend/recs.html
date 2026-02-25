@@ -269,19 +269,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    background: var(--cream);
   }
 
-  .rec-card.featured .card-visual { height: 100%; min-height: 240px; }
+  .rec-card.featured .card-visual { height: 100%; min-height: 260px; }
 
-  .visual-inner {
+  .card-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.4s ease;
-    position: relative; z-index: 1;
+    display: block;
   }
-  .rec-card:hover .visual-inner { transform: scale(1.1) rotate(-3deg); }
+
+  .rec-card:hover .card-visual img { transform: scale(1.07); }
+
+  .visual-fallback {
+    font-size: 4rem;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+  }
 
   .card-content { padding: 22px; }
   .rec-card.featured .card-content { padding: 32px; display: flex; flex-direction: column; justify-content: center; }
@@ -515,66 +528,61 @@
 </div>
 
 <script>
-  const API = "http://localhost:5000";
+  const API = "https://shopsmart-ai.onrender.com";
 
   // Auth guard
   if (!localStorage.getItem('token')) window.location = 'index.html';
 
-  let savedItems = new Set();
-  let ALL_RECS = [];
-
-  function inferEmoji(name) {
-    const n = name.toLowerCase();
-    if (/iphone|phone/.test(n)) return '📱';
-    if (/samsung/.test(n)) return '📲';
-    if (/headphone|earbud|sony/.test(n)) return '🎧';
-    if (/laptop/.test(n)) return '💻';
-    if (/keyboard/.test(n)) return '⌨️';
-    if (/watch/.test(n)) return '⌚';
-    if (/bag|tote/.test(n)) return '👜';
-    if (/wallet/.test(n)) return '👛';
-    if (/shoe|sneaker/.test(n)) return '👟';
-    return '🛍️';
-  }
-
-  const GRADIENTS = [
-    '#e8eeff,#d0d8ff','#fdf0e0,#f8debb','#ebf5eb,#d4e8d4',
-    '#fef9e8,#fdf0c0','#fff5f5,#ffe0e0','#f0f8ff,#d8eeff',
-    '#fff0f8,#ffd8ef','#f5f5f5,#e8e8e8'
-  ];
+  let savedItems  = new Set();
+  let ALL_RECS    = [];
+  let retryCount  = 0;
 
   const WHY_PHRASES = [
-    "Top-rated pick based on your taste profile.",
-    "Highly recommended by shoppers like you.",
-    "Matches your quality-first preference perfectly.",
-    "One of our most popular items this week.",
-    "Excellent value — consistently loved by our users.",
-    "A crowd favorite that fits your style.",
+    "Top-rated pick that matches your taste profile.",
+    "Highly recommended by shoppers just like you.",
+    "One of our most loved items this week.",
+    "Excellent quality — consistently 5-star reviews.",
+    "A crowd favorite that fits your style perfectly.",
     "Our AI flagged this as a strong match for you.",
-    "Based on your browsing, you'll love this."
+    "Based on your preferences, you'll love this.",
+    "Trending right now in your favourite category.",
+    "Premium pick at an unbeatable value.",
+    "Customers who viewed your items bought this."
   ];
 
   function renderRecs(list) {
     const grid = document.getElementById('recs-grid');
     document.querySelector('.insight-card:nth-child(2) .insight-val').textContent = list.length;
+
     if (!list.length) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:12px">🛍</div><div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink)">No recommendations yet</div><p style="margin-top:8px">Seed some products first via <code>/api/seed</code></p></div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
+        <div style="font-size:2.5rem;margin-bottom:12px">🛍</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink)">No recommendations yet</div>
+        <p style="margin-top:8px">No products found in the database.</p>
+      </div>`;
       return;
     }
+
     grid.innerHTML = list.map((r, i) => `
       <div class="rec-card ${i === 0 ? 'featured' : ''}" style="animation-delay:${i * 0.07}s">
-        <div class="card-visual" style="background:linear-gradient(135deg,${r.gradient})">
-          <div class="visual-inner">${r.emoji}</div>
+        <div class="card-visual">
+          <img
+            src="${r.image}"
+            alt="${r.name}"
+            loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          />
+          <div class="visual-fallback" style="display:none">🛍️</div>
         </div>
         <div class="card-content">
           <div class="rec-meta">
-            <span class="rec-cat">⭐ ${r.rating}</span>
+            <span class="rec-cat">${r.category}</span>
             <span class="match-badge">✦ ${r.match}% match</span>
           </div>
           <div class="rec-name">${r.name}</div>
           <div class="rec-why">"${r.why}"</div>
           <div class="rec-footer">
-            <div class="rec-price">₹${r.price.toLocaleString('en-IN')}</div>
+            <div class="rec-price">${r.price ? `₹${Number(r.price).toLocaleString('en-IN')}` : 'View price'}</div>
             <div class="rec-action">
               <button class="btn-save ${savedItems.has(r.id) ? 'saved' : ''}" id="save-${r.id}" onclick="toggleSave(${r.id})">
                 ${savedItems.has(r.id) ? '❤️ Saved' : '🤍 Save'}
@@ -591,20 +599,49 @@
     try {
       const res  = await fetch(`${API}/api/products`);
       const data = await res.json();
-      // Sort by rating descending, assign match scores
+
+      // Sort by rating desc, top 12 shown as "recommendations"
       ALL_RECS = [...data]
-        .sort((a, b) => b.rating - a.rating)
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 12)
         .map((p, i) => ({
-          ...p,
-          emoji: inferEmoji(p.name),
-          gradient: GRADIENTS[i % GRADIENTS.length],
-          match: Math.max(85, Math.round(p.rating * 20) - i),
-          why: WHY_PHRASES[i % WHY_PHRASES.length]
+          id:       p.product_id,
+          name:     p.name,
+          category: p.category,
+          image:    p.image_url,
+          price:    p.price || null,
+          rating:   p.rating || null,
+          match:    Math.min(99, Math.max(85, 99 - i * 2)),
+          why:      WHY_PHRASES[i % WHY_PHRASES.length]
         }));
+
       renderRecs(ALL_RECS);
     } catch (e) {
+      retryCount++;
+      if (retryCount <= 4) {
+        const wait = retryCount * 8;
+        let countdown = wait;
+        const interval = setInterval(() => {
+          countdown--;
+          document.getElementById('recs-grid').innerHTML =
+            `<div style="grid-column:1/-1;text-align:center;padding:60px">
+              <div style="font-size:2rem;display:inline-block;animation:spin 1.2s linear infinite">✦</div>
+              <p style="margin-top:16px;font-family:'Playfair Display',serif;font-size:1.1rem">Server waking up…</p>
+              <p style="color:var(--muted);margin-top:8px">Retrying in <strong>${countdown}s</strong> · attempt ${retryCount}/4</p>
+            </div>`;
+          if (countdown <= 0) { clearInterval(interval); loadRecs(); }
+        }, 1000);
+        document.getElementById('loading').classList.add('hidden');
+        return;
+      }
+      document.getElementById('loading').classList.add('hidden');
       document.getElementById('recs-grid').innerHTML =
-        `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:2rem">⚠️</div><p style="margin-top:12px">Cannot reach server. Is Flask running on port 5000?</p></div>`;
+        `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
+          <div style="font-size:2rem">⚠️</div>
+          <p style="margin-top:12px;color:#c0392b;font-size:0.9rem">${e.message}</p>
+          <p style="margin-top:8px;font-size:0.82rem">Check: <a href="${API}/api/status" target="_blank" style="color:var(--gold)">${API}/api/status</a></p>
+          <button onclick="retryCount=0;loadRecs()" style="margin-top:16px;padding:10px 24px;background:var(--ink);color:var(--paper);border:none;border-radius:100px;cursor:pointer;font-size:0.9rem;font-family:inherit">↺ Try Again</button>
+        </div>`;
     }
     document.getElementById('loading').classList.add('hidden');
   }
