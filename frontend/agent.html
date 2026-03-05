@@ -181,7 +181,7 @@ body::after{content:'';position:fixed;width:600px;height:600px;background:radial
           <div class="agent-name">ShopSmart Agent</div>
           <div class="agent-status">
             <span class="status-dot"></span>
-            Online · Powered by Claude AI
+            Online · Powered by Gemini AI
           </div>
         </div>
       </div>
@@ -206,7 +206,7 @@ body::after{content:'';position:fixed;width:600px;height:600px;background:radial
           <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
         </button>
       </div>
-      <div class="input-hint">Powered by Claude AI · Your personal shopping expert</div>
+      <div class="input-hint">Powered by Gemini AI · Your personal shopping expert</div>
     </div>
   </div>
 </div>
@@ -233,7 +233,7 @@ function handleKey(e) {
 }
 
 function sendSuggestion(el) {
-  const text = el.textContent.replace(/^[^\s]+\s/, '').trim();
+  const text = el.innerText.replace(/^.\s+/, '').trim();
   document.getElementById('chat-input').value = text;
   sendMessage();
 }
@@ -372,7 +372,7 @@ async function sendMessage() {
       const reply = data.reply || "I couldn't find a good answer. Try rephrasing!";
       appendMessage('agent', reply, data.products);
       // Add assistant response to history
-      conversationHistory.push({ role: 'assistant', content: reply });
+      conversationHistory.push({ role: 'model', content: reply });
     }
   } catch (e) {
     clearInterval(thinkInterval);

@@ -351,117 +351,46 @@ def seed():
         {"product_id":48,"name":"Swimming Goggles","category":"Sports","description":"Anti-fog UV protection swimming goggles with adjustable strap","image_url":"https://images.unsplash.com/photo-1600965962102-9d260a71890d?q=80&w=400","price":999,"rating":0,"review_count":0},
         {"product_id":49,"name":"Baseball Bat","category":"Sports","description":"Aluminum alloy baseball bat with cushioned grip","image_url":"https://images.unsplash.com/photo-1593786481097-cf281dd12e9e?q=80&w=400","price":2999,"rating":0,"review_count":0},
         {"product_id":50,"name":"Jump Rope","category":"Sports","description":"Speed jump rope with ball bearings for cardio training","image_url":"https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=400","price":599,"rating":0,"review_count":0},
+        # Books
+        {"product_id":51,"name":"Atomic Habits","category":"Books","description":"James Clear's guide to building good habits and breaking bad ones permanently","image_url":"https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=400","price":499,"rating":0,"review_count":0},
+        {"product_id":52,"name":"The Psychology of Money","category":"Books","description":"Morgan Housel's timeless lessons on wealth, greed and happiness","image_url":"https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=400","price":349,"rating":0,"review_count":0},
+        {"product_id":53,"name":"Rich Dad Poor Dad","category":"Books","description":"Robert Kiyosaki on financial literacy and investing your way to freedom","image_url":"https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400","price":299,"rating":0,"review_count":0},
+        {"product_id":54,"name":"Deep Work","category":"Books","description":"Cal Newport's rules for focused success in a deeply distracted world","image_url":"https://images.unsplash.com/photo-1519682337058-a94d519337bc?q=80&w=400","price":399,"rating":0,"review_count":0},
+        {"product_id":55,"name":"Zero to One","category":"Books","description":"Peter Thiel on startups and how to build the future from scratch","image_url":"https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=400","price":449,"rating":0,"review_count":0},
+        {"product_id":56,"name":"Sapiens","category":"Books","description":"Yuval Noah Harari's brief history of humankind across civilizations","image_url":"https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=400","price":549,"rating":0,"review_count":0},
+        # Food & Gourmet
+        {"product_id":57,"name":"Premium Dark Chocolate Box","category":"Food","description":"Belgian 70% dark chocolate assortment in a luxury gift box","image_url":"https://images.unsplash.com/photo-1548907040-4baa42d10919?q=80&w=400","price":1299,"rating":0,"review_count":0},
+        {"product_id":58,"name":"Himalayan Pink Salt","category":"Food","description":"Coarse grain natural Himalayan pink salt for gourmet cooking","image_url":"https://images.unsplash.com/photo-1518369675-75e7a4c0e8f9?q=80&w=400","price":349,"rating":0,"review_count":0},
+        {"product_id":59,"name":"Organic Green Tea Set","category":"Food","description":"Premium Darjeeling first-flush green tea, 100g loose leaf tin","image_url":"https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=400","price":799,"rating":0,"review_count":0},
+        {"product_id":60,"name":"Gourmet Dry Fruits Mix","category":"Food","description":"Premium assorted almonds, cashews, pistachios and walnuts 500g","image_url":"https://images.unsplash.com/photo-1608797178974-15b35a64ede9?q=80&w=400","price":1499,"rating":0,"review_count":0},
+        {"product_id":61,"name":"Cold Press Olive Oil","category":"Food","description":"Extra virgin cold-pressed olive oil from Spanish olives, 1L","image_url":"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=400","price":899,"rating":0,"review_count":0},
+        {"product_id":62,"name":"Artisan Coffee Beans","category":"Food","description":"Single-origin Ethiopian Yirgacheffe whole bean coffee 250g","image_url":"https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=400","price":699,"rating":0,"review_count":0},
+        # Toys & Games
+        {"product_id":63,"name":"LEGO Architecture Set","category":"Toys & Games","description":"Build iconic landmarks with this 800-piece detailed LEGO kit","image_url":"https://images.unsplash.com/photo-1587654780291-39c9404d746b?q=80&w=400","price":5999,"rating":0,"review_count":0},
+        {"product_id":64,"name":"Chess Set Wooden","category":"Toys & Games","description":"Hand-carved wooden chess set with folding board and storage","image_url":"https://images.unsplash.com/photo-1529699211952-734e80c4d42b?q=80&w=400","price":2499,"rating":0,"review_count":0},
+        {"product_id":65,"name":"Monopoly Classic","category":"Toys & Games","description":"The classic real-estate board game for family game nights","image_url":"https://images.unsplash.com/photo-1611996575749-79a3a250f948?q=80&w=400","price":1299,"rating":0,"review_count":0},
+        {"product_id":66,"name":"Remote Control Car","category":"Toys & Games","description":"Off-road 4WD RC car with 2.4GHz control and 30+ km/h top speed","image_url":"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=400","price":3499,"rating":0,"review_count":0},
+        {"product_id":67,"name":"Rubik's Cube Speed","category":"Toys & Games","description":"Professional 3x3 speed cube with smooth magnetic corner cutting","image_url":"https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?q=80&w=400","price":599,"rating":0,"review_count":0},
+        {"product_id":68,"name":"Carrom Board Premium","category":"Toys & Games","description":"Full-size tournament-grade carrom board with smooth lacquer surface","image_url":"https://images.unsplash.com/photo-1606503153255-59d5e417b6cd?q=80&w=400","price":4999,"rating":0,"review_count":0},
+        # Automotive
+        {"product_id":69,"name":"Car Dash Cam 4K","category":"Automotive","description":"4K UHD dash camera with night vision and 170 degree wide angle lens","image_url":"https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=400","price":7999,"rating":0,"review_count":0},
+        {"product_id":70,"name":"Tyre Inflator Cordless","category":"Automotive","description":"Portable cordless tyre inflator with digital pressure gauge and LED light","image_url":"https://images.unsplash.com/photo-1568772585407-9f217294f80c?q=80&w=400","price":3499,"rating":0,"review_count":0},
+        {"product_id":71,"name":"Car Seat Covers","category":"Automotive","description":"Universal fit premium PU leather car seat cover set for 5 seats","image_url":"https://images.unsplash.com/photo-1547744152-14d985cb937f?q=80&w=400","price":5999,"rating":0,"review_count":0},
+        {"product_id":72,"name":"Microfiber Car Wash Kit","category":"Automotive","description":"12-piece microfiber cleaning kit for interior and exterior car care","image_url":"https://images.unsplash.com/photo-1601362840469-51e4d8d58785?q=80&w=400","price":1499,"rating":0,"review_count":0},
+        {"product_id":73,"name":"Car Phone Mount","category":"Automotive","description":"360 degree adjustable magnetic phone mount for dashboard and windshield","image_url":"https://images.unsplash.com/photo-1609840113945-3ee765ced64d?q=80&w=400","price":799,"rating":0,"review_count":0},
+        {"product_id":74,"name":"Jump Starter Powerbank","category":"Automotive","description":"12V car jump starter with 20000mAh powerbank, USB and LED torch","image_url":"https://images.unsplash.com/photo-1609139003551-2b85a2c72c39?q=80&w=400","price":4999,"rating":0,"review_count":0},
+        # Health & Wellness
+        {"product_id":75,"name":"Whey Protein Gold Standard","category":"Health","description":"ON Gold Standard 100% whey protein, double rich chocolate 2lb","image_url":"https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=400","price":3499,"rating":0,"review_count":0},
+        {"product_id":76,"name":"Daily Multivitamin Tablets","category":"Health","description":"Daily multivitamin with 25 essential vitamins and minerals, 60 tablets","image_url":"https://images.unsplash.com/photo-1550572017-edd951b55104?q=80&w=400","price":699,"rating":0,"review_count":0},
+        {"product_id":77,"name":"Blood Pressure Monitor","category":"Health","description":"Digital automatic upper arm BP monitor with irregular heartbeat detection","image_url":"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?q=80&w=400","price":2499,"rating":0,"review_count":0},
+        {"product_id":78,"name":"Resistance Bands Set","category":"Health","description":"Set of 5 latex resistance bands for strength training and rehabilitation","image_url":"https://images.unsplash.com/photo-1598971639058-fab3c3109a5d?q=80&w=400","price":999,"rating":0,"review_count":0},
+        {"product_id":79,"name":"Omega-3 Fish Oil","category":"Health","description":"High-potency omega-3 EPA and DHA capsules for heart health, 60 softgels","image_url":"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400","price":549,"rating":0,"review_count":0},
+        {"product_id":80,"name":"Pulse Oximeter","category":"Health","description":"Fingertip pulse oximeter for SpO2 and pulse rate monitoring with display","image_url":"https://images.unsplash.com/photo-1584515933487-779824d29309?q=80&w=400","price":1299,"rating":0,"review_count":0},
     ]
     products_col.delete_many({})
     products_col.insert_many(PRODUCTS)
-    return jsonify({"message": f"✓ Seeded {len(PRODUCTS)} products", "count": len(PRODUCTS)})
+    return jsonify({"message": f"✓ Seeded {len(PRODUCTS)} products across 10 categories", "count": len(PRODUCTS)})
 
-
-# ================= AI AGENT =================
-@app.route("/api/agent", methods=["POST", "OPTIONS"])
-def agent():
-    if request.method == "OPTIONS": return jsonify({}), 200
-
-    if not GEMINI_AVAILABLE:
-        return jsonify({"error": "google-generativeai package not installed"}), 500
-
-    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-    if not GEMINI_API_KEY:
-        return jsonify({"error": "GEMINI_API_KEY not set in environment"}), 500
-
-    data     = request.json or {}
-    messages = data.get("messages", [])
-    if not messages:
-        return jsonify({"error": "No messages provided"}), 400
-
-    # Load all products from MongoDB
-    products = list(products_col.find({}, {"_id": 0}))
-
-    def search_products(query="", category="", max_price=None, min_price=None, min_rating=None, limit=5):
-        results = products
-        if query:
-            q = query.lower()
-            results = [p for p in results if
-                q in p.get("name","").lower() or
-                q in p.get("description","").lower() or
-                q in p.get("category","").lower()]
-        if category:
-            results = [p for p in results if
-                p.get("category","").lower() == category.lower()]
-        if max_price:
-            results = [p for p in results if (p.get("price") or 0) <= max_price]
-        if min_price:
-            results = [p for p in results if (p.get("price") or 0) >= min_price]
-        if min_rating:
-            results = [p for p in results if (p.get("rating") or 0) >= min_rating]
-        return results[:limit]
-
-    def compare_products(product_ids):
-        return [p for p in products if p.get("product_id") in product_ids]
-
-    def get_product_details(product_id):
-        p = next((p for p in products if p.get("product_id") == product_id), None)
-        if p:
-            reviews = list(reviews_col.find({"product_id": product_id}, {"_id": 0}))
-            p["reviews"] = reviews
-        return p or {"error": "Not found"}
-
-    # Build full context for Gemini
-    products_text = "\n".join([
-        f"ID:{p.get('product_id')} | {p.get('name')} | {p.get('category')} | ₹{p.get('price',0):,} | Rating:{p.get('rating',0)} | {p.get('description','')}"
-        for p in products
-    ])
-
-    # Build conversation for Gemini
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
-        system_instruction=f"""You are ShopSmart AI — an intelligent shopping assistant for an Indian e-commerce platform.
-
-You have access to {len(products)} products. Here is the full catalogue:
-
-{products_text}
-
-Your job:
-- Search and recommend products based on user needs
-- Compare products on price, rating, features
-- Suggest complete setups within a budget (e.g. home gym under ₹20,000)
-- Answer questions about any product
-- Always mention product name, price (₹), and why it matches
-
-Rules:
-- Only recommend products from the catalogue above
-- Always include product IDs in your response like [ID:5] so frontend can show cards
-- Be conversational, helpful and concise
-- All prices are in Indian Rupees (₹)"""
-    )
-
-    # Convert history to Gemini format
-    gemini_history = []
-    for msg in messages[:-1]:  # all except last
-        role = "user" if msg["role"] == "user" else "model"
-        gemini_history.append({"role": role, "parts": [msg["content"]]})
-
-    chat    = model.start_chat(history=gemini_history)
-    user_msg = messages[-1]["content"]
-
-    try:
-        response = chat.send_message(user_msg)
-        reply    = response.text
-
-        # Extract product IDs mentioned in response like [ID:5]
-        import re
-        mentioned_ids = [int(x) for x in re.findall(r'\[ID:(\d+)\]', reply)]
-        # Also extract plain product_id numbers from context
-        product_results = [p for p in products if p.get("product_id") in mentioned_ids]
-
-        # Clean up [ID:x] tags from display text
-        clean_reply = re.sub(r'\s*\[ID:\d+\]', '', reply)
-
-        return jsonify({"reply": clean_reply, "products": product_results[:6]})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 # ================= START =================
 if __name__ == "__main__":
