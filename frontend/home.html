@@ -603,7 +603,9 @@
     document.getElementById("user-name").textContent = localStorage.getItem("name") || "Shopper";
     function go(page) { window.location = page }
     function logout() {
-      localStorage.clear();
+      localStorage.removeItem('token');
+      localStorage.removeItem('name');
+      localStorage.removeItem('email');
       window.location = "index.html";
     }
   </script>

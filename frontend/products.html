@@ -696,14 +696,21 @@
       color: var(--gold)
     }
 
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px
+    }
+
     .add-btn {
-      padding: 8px 16px;
+      flex: 1;
+      padding: 8px 10px;
       background: var(--ink);
       color: var(--paper);
       border: none;
       border-radius: 100px;
       font-family: 'DM Sans', sans-serif;
-      font-size: .79rem;
+      font-size: .75rem;
       font-weight: 500;
       cursor: pointer;
       transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
@@ -713,12 +720,219 @@
     .add-btn:hover {
       background: var(--gold);
       color: var(--ink);
-      transform: scale(1.05)
+      transform: scale(1.04)
     }
 
     .add-btn.added {
+      background: #27ae60;
+      color: white
+    }
+
+    .buy-btn {
+      flex: 1;
+      padding: 8px 10px;
       background: var(--gold);
-      color: var(--ink)
+      color: var(--ink);
+      border: none;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .25s cubic-bezier(.34, 1.56, .64, 1);
+      white-space: nowrap
+    }
+
+    .buy-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      transform: scale(1.04)
+    }
+
+    /* MINI CART DRAWER */
+    .cart-overlay2 {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 14, 23, .5);
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      backdrop-filter: blur(4px)
+    }
+
+    .cart-overlay2.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .mini-cart {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 380px;
+      background: var(--paper);
+      z-index: 301;
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -20px 0 60px rgba(15, 14, 23, .18)
+    }
+
+    .mini-cart.open {
+      transform: translateX(0)
+    }
+
+    .mc-head {
+      padding: 22px 24px;
+      border-bottom: 1px solid rgba(201, 168, 76, .15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .mc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700
+    }
+
+    .mc-close {
+      width: 34px;
+      height: 34px;
+      border: none;
+      background: var(--cream);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all .2s
+    }
+
+    .mc-close:hover {
+      background: var(--gold)
+    }
+
+    .mc-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px
+    }
+
+    .mc-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(201, 168, 76, .08)
+    }
+
+    .mc-img {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--cream);
+      flex-shrink: 0
+    }
+
+    .mc-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .mc-info {
+      flex: 1
+    }
+
+    .mc-name {
+      font-size: .85rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+      line-height: 1.3
+    }
+
+    .mc-price {
+      font-family: 'Playfair Display', serif;
+      font-size: .9rem;
+      font-weight: 700
+    }
+
+    .mc-qty {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .mc-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .9rem;
+      align-self: flex-start;
+      padding: 2px;
+      transition: color .2s
+    }
+
+    .mc-remove:hover {
+      color: #c0392b
+    }
+
+    .mc-empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--muted)
+    }
+
+    .mc-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(201, 168, 76, .15)
+    }
+
+    .mc-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px
+    }
+
+    .mc-total-label {
+      font-size: .85rem;
+      color: var(--muted)
+    }
+
+    .mc-total-amt {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700
+    }
+
+    .mc-checkout {
+      width: 100%;
+      padding: 13px;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1)
+    }
+
+    .mc-checkout:hover {
+      background: var(--gold);
+      color: var(--ink);
+      transform: translateY(-2px)
+    }
+
+    @media(max-width:540px) {
+      .mini-cart {
+        width: 100%
+      }
     }
 
     /* EMPTY */
@@ -893,6 +1107,23 @@
     </div>
   </div>
 
+  <!-- MINI CART DRAWER -->
+  <div class="cart-overlay2" id="cart-overlay2" onclick="closeMiniCart()"></div>
+  <div class="mini-cart" id="mini-cart">
+    <div class="mc-head">
+      <div class="mc-title">🛍 Your Cart</div>
+      <button class="mc-close" onclick="closeMiniCart()">✕</button>
+    </div>
+    <div class="mc-items" id="mc-items"></div>
+    <div class="mc-footer">
+      <div class="mc-total">
+        <span class="mc-total-label">Total</span>
+        <span class="mc-total-amt" id="mc-total-amt">₹0</span>
+      </div>
+      <button class="mc-checkout" onclick="goToCheckout()">Proceed to Buy & Pay →</button>
+    </div>
+  </div>
+
   <script>
     const API = "https://shopsmart-ai.onrender.com";
     let ALL_PRODUCTS = [];
@@ -901,7 +1132,13 @@
 
     // ── HELPERS ──────────────────────────────────────
     function go(p) { window.location = p; }
-    function logout() { localStorage.clear(); window.location = 'index.html'; }
+    function logout() {
+      // Only clear auth — preserve cart & wishlist so user keeps their items
+      localStorage.removeItem('token');
+      localStorage.removeItem('name');
+      localStorage.removeItem('email');
+      window.location = 'index.html';
+    }
 
     function syncCart() {
       const c = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -1108,9 +1345,13 @@
         <div class="card-name">${p.name}</div>
         <div class="card-desc">${p.desc}</div>
         <div class="card-rating">${starBar(p.rating)}</div>
-        <div class="card-footer" style="margin-top:12px">
+        <div class="card-footer" style="margin-top:10px">
           <div class="card-price">${p.price ? fmt(p.price) : 'View price'}</div>
-          <button class="add-btn" id="add-${p.id}" onclick="addToCart(event,${p.id},'${p.name.replace(/'/g, "\\'")}',${p.price})">Add to cart</button>
+          <div style="font-size:.72rem;color:var(--muted)">${starBar(p.rating)}</div>
+        </div>
+        <div class="card-actions">
+          <button class="add-btn" id="add-${p.id}" onclick="addToCart(event,${p.id},'${p.name.replace(/'/g, "\\'")}',${p.price},'${p.img}')">+ Cart</button>
+          <button class="buy-btn" onclick="buyNow(event,${p.id},'${p.name.replace(/'/g, "\\'")}',${p.price},'${p.img}')">Buy Now</button>
         </div>
       </div>
     </div>
@@ -1118,18 +1359,39 @@
     }
 
     // ── CART ─────────────────────────────────────────
-    function addToCart(e, id, name, price) {
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+    function saveCart(c) { localStorage.setItem('cart', JSON.stringify(c)); syncCart(); }
+
+    function addToCart(e, id, name, price, img) {
       e.stopPropagation();
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const cart = getCart();
       const idx = cart.findIndex(i => i.id === id);
-      if (idx >= 0) { cart[idx].qty++; } else { cart.push({ id, name, price, qty: 1 }); }
-      localStorage.setItem('cart', JSON.stringify(cart));
+      if (idx >= 0) cart[idx].qty++;
+      else cart.push({ id, name, price, image: img, qty: 1 });
+      saveCart(cart);
       const btn = document.getElementById(`add-${id}`);
-      if (btn) { btn.textContent = '✓ Added'; btn.classList.add('added'); setTimeout(() => { btn.textContent = 'Add to cart'; btn.classList.remove('added'); }, 1400); }
+      if (btn) {
+        btn.textContent = '✓ Added';
+        btn.classList.add('added');
+        setTimeout(() => { btn.textContent = '+ Cart'; btn.classList.remove('added'); }, 1400);
+      }
+      // animate badge
       const ce = document.getElementById('cart-count');
-      ce.textContent = cart.reduce((s, i) => s + i.qty, 0);
       ce.classList.add('bump');
       setTimeout(() => ce.classList.remove('bump'), 300);
+      // flash open mini-cart
+      openMiniCart();
+    }
+
+    function buyNow(e, id, name, price, img) {
+      e.stopPropagation();
+      const cart = getCart();
+      const idx = cart.findIndex(i => i.id === id);
+      if (idx >= 0) cart[idx].qty++;
+      else cart.push({ id, name, price, image: img, qty: 1 });
+      saveCart(cart);
+      // Go straight to product page where user can checkout
+      window.location = `product.html?id=${id}`;
     }
 
     function toggleWish(id, e) {
@@ -1139,12 +1401,52 @@
       btn.textContent = saved ? '❤️' : '🤍';
     }
 
-    function showCart() {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      if (!cart.length) { alert('Your cart is empty!'); return; }
-      const lines = cart.map(i => i.name + ' x' + i.qty + '  ' + fmt((i.price || 0) * i.qty));
+    // ── MINI CART DRAWER ──────────────────────────────
+    function openMiniCart() {
+      renderMiniCart();
+      document.getElementById('cart-overlay2').classList.add('open');
+      document.getElementById('mini-cart').classList.add('open');
+    }
+    function closeMiniCart() {
+      document.getElementById('cart-overlay2').classList.remove('open');
+      document.getElementById('mini-cart').classList.remove('open');
+    }
+    function showCart() { openMiniCart(); }
+
+    function renderMiniCart() {
+      const cart = getCart();
+      const el = document.getElementById('mc-items');
+      if (!cart.length) {
+        el.innerHTML = `<div class="mc-empty">🛍<br>Your cart is empty</div>`;
+        document.getElementById('mc-total-amt').textContent = '₹0';
+        return;
+      }
+      el.innerHTML = cart.map((item, i) => `
+        <div class="mc-item">
+          <div class="mc-img"><img src="${item.image || ''}" alt="${item.name}" onerror="this.style.display='none'"></div>
+          <div class="mc-info">
+            <div class="mc-name">${item.name}</div>
+            <div class="mc-price">${fmt(item.price || 0)}</div>
+            <div class="mc-qty">Qty: ${item.qty}</div>
+          </div>
+          <button class="mc-remove" onclick="removeFromMiniCart(${i})">✕</button>
+        </div>`).join('');
       const total = cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
-      alert('🛍 Cart:\n\n' + lines.join('\n') + '\n\nTotal: ' + fmt(total));
+      document.getElementById('mc-total-amt').textContent = fmt(total);
+    }
+
+    function removeFromMiniCart(idx) {
+      const cart = getCart();
+      cart.splice(idx, 1);
+      saveCart(cart);
+      renderMiniCart();
+    }
+
+    function goToCheckout() {
+      const cart = getCart();
+      if (!cart.length) { alert('Your cart is empty!'); return; }
+      // Send to product page (which has the full checkout + invoice flow)
+      window.location = 'product.html?id=' + cart[0].id;
     }
 
     loadProducts();

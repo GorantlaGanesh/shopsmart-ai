@@ -1726,7 +1726,12 @@
     }
 
     function go(page) { window.location = page; }
-    function logout() { localStorage.clear(); window.location = 'index.html'; }
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('name');
+      localStorage.removeItem('email');
+      window.location = 'index.html';
+    }
 
     loadProduct();
     updateCartBadge();
