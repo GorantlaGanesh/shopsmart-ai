@@ -330,13 +330,13 @@
 
     .add-cart-btn {
       flex: 1;
-      padding: 13px 28px;
+      padding: 13px 20px;
       background: var(--ink);
       color: var(--paper);
       border: none;
       border-radius: 100px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 1rem;
+      font-size: .95rem;
       font-weight: 500;
       cursor: pointer;
       transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
@@ -354,8 +354,40 @@
     }
 
     .add-cart-btn.added {
+      background: #27ae60;
+      color: white
+    }
+
+    .buy-now-btn {
+      flex: 1;
+      padding: 13px 20px;
       background: var(--gold);
-      color: var(--ink)
+      color: var(--ink);
+      border: none;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: .01em
+    }
+
+    .buy-now-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(15, 14, 23, .25)
+    }
+
+    .buy-now-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none
     }
 
     .wishlist-btn2 {
@@ -1432,6 +1464,7 @@
             <button class="qty-btn" onclick="changeQty(1)">+</button>
           </div>
           <button class="add-cart-btn" id="add-btn" onclick="addToCart()">🛍 Add to Cart</button>
+          <button class="buy-now-btn" id="buy-btn" onclick="buyNow()">⚡ Buy Now</button>
           <button class="wishlist-btn2 ${isWished ? 'saved' : ''}" id="wish-btn" onclick="toggleWishlist()">${isWished ? '❤️' : '🤍'}</button>
         </div>
         <div class="divider-line"></div>
@@ -1605,7 +1638,7 @@
       updateCartBadge(); renderCartItems();
     }
 
-    // ── CHECKOUT → INVOICE ────────────────────────────
+    // ── CHECKOUT (cart) → INVOICE ─────────────────────────
     async function checkout() {
       if (!token) { go('index.html'); return; }
       if (!cart.length) { alert('Your cart is empty!'); return; }
@@ -1617,12 +1650,52 @@
         });
         const data = await res.json();
         if (res.ok) {
-          const orderItems = [...cart]; // snapshot before clearing
+          const orderItems = [...cart];
           cart = []; localStorage.setItem('cart', JSON.stringify(cart));
           updateCartBadge(); renderCartItems(); closeCart();
           showInvoice(data.order_id, orderItems, data.total);
         } else { alert(data.error || 'Order failed'); }
       } catch (e) { alert('Network error'); }
+    }
+
+    // ── BUY NOW → INSTANT ORDER + INVOICE (no cart) ──────
+    async function buyNow() {
+      if (!PRODUCT) return;
+      if (!token) {
+        // Redirect to login, come back after
+        localStorage.setItem('redirect_after_login', window.location.href);
+        go('index.html'); return;
+      }
+
+      const btn = document.getElementById('buy-btn');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Placing order…';
+
+      // Build a single-item order (qty = currently selected qty)
+      const orderItems = [{
+        id: PRODUCT.product_id, name: PRODUCT.name,
+        price: PRODUCT.price, image: PRODUCT.image_url || PRODUCT.image, qty
+      }];
+
+      try {
+        const res = await fetch(`${API}/api/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ items: orderItems })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          // Show invoice immediately — cart is NOT touched
+          showInvoice(data.order_id, orderItems, data.total);
+        } else {
+          alert(data.error || 'Order failed. Please try again.');
+        }
+      } catch (e) {
+        alert('Network error. Please check your connection.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '⚡ Buy Now';
+      }
     }
 
     // ── GENERATE INVOICE ──────────────────────────────
